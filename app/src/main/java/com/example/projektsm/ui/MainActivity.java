@@ -2,6 +2,7 @@ package com.example.projektsm.ui;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,13 +20,15 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private static final String API_KEY = "68d344c1d7699bddc73ed97ae19f8052";
     private TextView weatherTextView;
+    private ImageView weatherIcon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         weatherTextView = findViewById(R.id.weatherTextView);
-        getCurrentWeather("Warsaw");
+        weatherIcon = findViewById(R.id.weather_icon);
+        getCurrentWeather("Goniądz");
     }
 
     private void getCurrentWeather(String city) {
@@ -38,7 +41,9 @@ public class MainActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     WeatherResponse weather = response.body();
                     String temperature = weather.getMain().getTemperature() + "°C";
+                    String iconCode = weather.getWeather().get(0).getIcon();
                     weatherTextView.setText("Temperature in " + weather.getCityName() + ": " + temperature);
+                    weatherIcon.setImageResource(getWeatherIcon(iconCode));
                 } else {
                     Log.e(TAG, "Response failed: " + response.errorBody());
                     weatherTextView.setText("Failed to load weather data.");
@@ -51,4 +56,41 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    private int getWeatherIcon(String iconCode) {
+        switch (iconCode) {
+            case "01d":
+                return R.drawable.icon_01d;
+            case "01n":
+                return R.drawable.icon_01n;
+            case "02d":
+                return R.drawable.icon_02d;
+            case "02n":
+                return R.drawable.icon_02n;
+            case "03d":
+            case "03n":
+            case "04d":
+            case "04n":
+                return R.drawable.icon_03d;
+            case "09d":
+            case "09n":
+                return R.drawable.icon_09d;
+            case "10d":
+                return R.drawable.icon_10d;
+            case "10n":
+                return R.drawable.icon_10n;
+            case "11d":
+            case "11n":
+                return R.drawable.icon_11d;
+            case "13d":
+            case "13n":
+                return R.drawable.icon_13d;
+            case "50d":
+            case "50n":
+                return R.drawable.icon_50d;
+
+            default: return R.drawable.icon_01d;
+        }
+    }
+
 }
