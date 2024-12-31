@@ -19,16 +19,21 @@ import retrofit2.Response;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private static final String API_KEY = "68d344c1d7699bddc73ed97ae19f8052";
-    private TextView weatherTextView;
+    private TextView temperatureTextView, temperatureFeelsLikeTextView, pressureTextView, humidityTextView, windTextView, visibilityTextView;
     private ImageView weatherIcon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        weatherTextView = findViewById(R.id.weatherTextView);
+        temperatureTextView = findViewById(R.id.weatherTextView);
+        temperatureFeelsLikeTextView = findViewById(R.id.weather_temp_feels_like);
+        pressureTextView = findViewById(R.id.pressure);
+        humidityTextView = findViewById(R.id.humidity);
+        windTextView = findViewById(R.id.wind);
+        visibilityTextView = findViewById(R.id.visibility);
         weatherIcon = findViewById(R.id.weather_icon);
-        getCurrentWeather("Goniądz");
+        getCurrentWeather("Oslo");
     }
 
     private void getCurrentWeather(String city) {
@@ -40,19 +45,34 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     WeatherResponse weather = response.body();
-                    String temperature = weather.getMain().getTemperature() + "°C";
+
+                    // Pobranie wartości:
+                    int temperature =  Math.round(weather.getMain().getTemperature());
+                    int feelsLikeTemperature = Math.round(weather.getMain().getFeelsLike());
+                    int humidity = weather.getMain().getHumidity();
+                    int pressure = weather.getMain().getPressure();
+                    float windSpeed = weather.getWind().getSpeed();
+                    float visibility = weather.getVisibility() / 1000f;
                     String iconCode = weather.getWeather().get(0).getIcon();
-                    weatherTextView.setText("Temperature in " + weather.getCityName() + ": " + temperature);
+
+
+                    // Wyświetlanie wartości:
+                    temperatureTextView.setText("Temperatura w " + weather.getCityName() + ": " + temperature + "°C");
+                    temperatureFeelsLikeTextView.setText("Odczuwalna temperatura: " + feelsLikeTemperature + "°C");
+                    pressureTextView.setText("Ciśnienie: " + pressure + "hPa");
+                    humidityTextView.setText("Wilgotność: " + humidity + "%");
+                    windTextView.setText("Wiatr: " + windSpeed + "m/s");
+                    visibilityTextView.setText("Widoczność: " + visibility + "km");
                     weatherIcon.setImageResource(getWeatherIcon(iconCode));
                 } else {
-                    Log.e(TAG, "Response failed: " + response.errorBody());
-                    weatherTextView.setText("Failed to load weather data.");
+                    Log.e(TAG, "Error: " + response.errorBody());
+                    temperatureTextView.setText("Nie udało się załadować pogody");
                 }
             }
 
             @Override
             public void onFailure(Call<WeatherResponse> call, Throwable t) {
-                Log.e(TAG, "API call failed: " + t.getMessage());
+                Log.e(TAG, "Błąd połączenia z API: " + t.getMessage());
             }
         });
     }
