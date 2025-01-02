@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
         windTextView = findViewById(R.id.wind);
         visibilityTextView = findViewById(R.id.visibility);
         weatherIcon = findViewById(R.id.weather_icon);
-        getCurrentWeather("Warszawa", mainLayout);
+        getCurrentWeather("Goniądz", mainLayout);
     }
 
     private void getCurrentWeather(String city, ConstraintLayout mainLayout) {
