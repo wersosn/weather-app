@@ -1,3 +1,4 @@
+Version [PL](#Aplikacja-pogodowa) | [ENG](#Weather-app)
 # Weather app
 ## Table of contents
 - [Project details](#project-details)
