@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -96,13 +97,13 @@
             <ImageView
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:src="@drawable/icon_50d" />
+                android:src="@drawable/pressure" />
 
             <TextView
                 android:id="@+id/pressure"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ładowanie ciśnienia"
+                android:text="Ładowanie ciśnienia..."
                 android:textSize="14sp"
                 android:gravity="center" />
         </LinearLayout>
@@ -120,7 +121,7 @@
             <ImageView
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:src="@drawable/icon_10d" />
+                android:src="@drawable/humidity" />
 
             <TextView
                 android:id="@+id/humidity"
@@ -144,7 +145,7 @@
             <ImageView
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:src="@drawable/icon_01n" />
+                android:src="@drawable/wind" />
 
             <TextView
                 android:id="@+id/wind"
@@ -168,7 +169,7 @@
             <ImageView
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:src="@drawable/icon_03d" />
+                android:src="@drawable/visibility" />
 
             <TextView
                 android:id="@+id/visibility"

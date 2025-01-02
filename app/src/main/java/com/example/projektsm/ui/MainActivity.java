@@ -6,6 +6,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.example.projektsm.R;
 import com.example.projektsm.api.RetrofitClient;
@@ -21,11 +22,13 @@ public class MainActivity extends AppCompatActivity {
     private static final String API_KEY = "68d344c1d7699bddc73ed97ae19f8052";
     private TextView temperatureTextView, temperatureFeelsLikeTextView, pressureTextView, humidityTextView, windTextView, visibilityTextView;
     private ImageView weatherIcon;
+    private ConstraintLayout mainLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mainLayout = findViewById(R.id.main_layout);
         temperatureTextView = findViewById(R.id.weatherTextView);
         temperatureFeelsLikeTextView = findViewById(R.id.weather_temp_feels_like);
         pressureTextView = findViewById(R.id.pressure);
@@ -33,10 +36,10 @@ public class MainActivity extends AppCompatActivity {
         windTextView = findViewById(R.id.wind);
         visibilityTextView = findViewById(R.id.visibility);
         weatherIcon = findViewById(R.id.weather_icon);
-        getCurrentWeather("Oslo");
+        getCurrentWeather("Warszawa", mainLayout);
     }
 
-    private void getCurrentWeather(String city) {
+    private void getCurrentWeather(String city, ConstraintLayout mainLayout) {
         WeatherApiService weatherApi = RetrofitClient.getClient().create(WeatherApiService.class);
         Call<WeatherResponse> call = weatherApi.getCurrentWeather(city, API_KEY, "metric");
 
@@ -55,6 +58,13 @@ public class MainActivity extends AppCompatActivity {
                     float visibility = weather.getVisibility() / 1000f;
                     String iconCode = weather.getWeather().get(0).getIcon();
 
+                    // Pobieranie wschodu i zachodu słońca:
+                    long sunrise = weather.getSys().getSunrise();
+                    long sunset = weather.getSys().getSunset();
+                    boolean night = isNight(sunrise, sunset);
+                    String weatherCondition = weather.getWeather().get(0).getMain();
+                    int backgroundResource = updateBackground(weatherCondition, night);
+                    mainLayout.setBackgroundResource(backgroundResource);
 
                     // Wyświetlanie wartości:
                     temperatureTextView.setText("Temperatura w " + weather.getCityName() + ": " + temperature + "°C");
@@ -64,6 +74,15 @@ public class MainActivity extends AppCompatActivity {
                     windTextView.setText("Wiatr: " + windSpeed + "m/s");
                     visibilityTextView.setText("Widoczność: " + visibility + "km");
                     weatherIcon.setImageResource(getWeatherIcon(iconCode));
+
+                    // Zmiana koloru tekstu w zależności od pogody:
+                    int textColor = getTextColor(weatherCondition, night);
+                    temperatureTextView.setTextColor(textColor);
+                    temperatureFeelsLikeTextView.setTextColor(textColor);
+                    pressureTextView.setTextColor(textColor);
+                    humidityTextView.setTextColor(textColor);
+                    windTextView.setTextColor(textColor);
+                    visibilityTextView.setTextColor(textColor);
                 } else {
                     Log.e(TAG, "Error: " + response.errorBody());
                     temperatureTextView.setText("Nie udało się załadować pogody");
@@ -112,5 +131,51 @@ public class MainActivity extends AppCompatActivity {
             default: return R.drawable.icon_01d;
         }
     }
+
+    private int updateBackground(String weatherCondition, boolean isNight) {
+        if (isNight) {
+            return R.drawable.night_gradient;
+        } else {
+            switch (weatherCondition.toLowerCase()) {
+                case "clear":
+                    return R.drawable.sunny_gradient;
+                case "rain":
+                case "drizzle":
+                    return R.drawable.rainy_gradient;
+                case "thunderstorm":
+                    return R.drawable.storm_gradient;
+                case "clouds":
+                case "snow":
+                    return R.drawable.snow_gradient;
+                default:
+                    return R.drawable.rainy_gradient;
+            }
+        }
+    }
+
+    private int getTextColor(String weatherCondition, boolean isNight) {
+        if (isNight) {
+            return getResources().getColor(android.R.color.white);
+        } else {
+            switch (weatherCondition.toLowerCase()) {
+                case "thunderstorm":
+                    return getResources().getColor(android.R.color.primary_text_light);
+                case "snow":
+                case "clear":
+                case "clouds":
+                case "rain":
+                case "drizzle":
+                default:
+                    return getResources().getColor(android.R.color.black);
+            }
+        }
+    }
+
+
+    private boolean isNight(long sunrise, long sunset) {
+        long currentTime = System.currentTimeMillis() / 1000;
+        return currentTime < sunrise || currentTime > sunset;
+    }
+
 
 }

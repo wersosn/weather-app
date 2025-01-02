@@ -18,6 +18,9 @@ public class WeatherResponse {
     @SerializedName("visibility")
     private int visibility;
 
+    @SerializedName("sys")
+    private Sys sys;
+
     // Gettery:
     public String getCityName() {
         return cityName;
@@ -37,6 +40,10 @@ public class WeatherResponse {
 
     public int getVisibility() {
         return visibility;
+    }
+
+    public Sys getSys() {
+        return sys;
     }
 
     public static class Main {
@@ -76,6 +83,13 @@ public class WeatherResponse {
         @SerializedName("description")
         private String description;
 
+        @SerializedName("main")
+        private String main;
+
+        public String getMain() {
+            return main;
+        }
+
         public String getIcon() {
             return icon;
         }
@@ -91,6 +105,22 @@ public class WeatherResponse {
 
         public float getSpeed() {
             return speed;
+        }
+    }
+
+    public static class Sys {
+        @SerializedName("sunrise")
+        private long sunrise;
+
+        @SerializedName("sunset")
+        private long sunset;
+
+        public long getSunrise() {
+            return sunrise;
+        }
+
+        public long getSunset() {
+            return sunset;
         }
     }
 }
