@@ -1,32 +1,62 @@
 package com.example.projektsm.ui;
 
+import android.content.Context;
+import android.content.Intent;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.projektsm.R;
 import com.example.projektsm.api.RetrofitClient;
 import com.example.projektsm.api.WeatherApiService;
 import com.example.projektsm.api.model.WeatherResponse;
+import com.example.projektsm.sensors.LocationActivity;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements LocationActivity.LocationCallbackInterface {
     private static final String TAG = "MainActivity";
     private static final String API_KEY = "68d344c1d7699bddc73ed97ae19f8052";
     private TextView temperatureTextView, temperatureFeelsLikeTextView, pressureTextView, humidityTextView, windTextView, visibilityTextView;
     private ImageView weatherIcon;
     private ConstraintLayout mainLayout;
+    private LocationActivity location;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Sprawdzanie czy jest dostęp do Internetu i Lokalizacji (póki co zawsze, potem zmienić to na pokazywanie się tylko raz)
+        if (!isLocationEnabled()) {
+            showEnableSettingsDialog("Włącz lokalizację", "Aplikacja wymaga włączenia lokalizacji. Czy chcesz ją włączyć?", new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+        } else {
+            if (!isInternetConnected()) {
+                showEnableSettingsDialog("Włącz internet", "Aplikacja wymaga połączenia z internetem. Czy chcesz włączyć Wi-Fi?", new Intent(Settings.ACTION_WIFI_SETTINGS));
+            }
+        }
+
+        // Inicjalizacja obsługi lokalizacji
+        location = new LocationActivity(this, this);
+        location.requestLocationPermissionAndFetch(this);
+
+        // Ustawienie widoków
         setContentView(R.layout.activity_main);
         mainLayout = findViewById(R.id.main_layout);
         temperatureTextView = findViewById(R.id.weatherTextView);
@@ -36,7 +66,33 @@ public class MainActivity extends AppCompatActivity {
         windTextView = findViewById(R.id.wind);
         visibilityTextView = findViewById(R.id.visibility);
         weatherIcon = findViewById(R.id.weather_icon);
-        getCurrentWeather("Goniądz", mainLayout);
+
+        swipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            refreshWeatherData();
+        });
+    }
+
+    private void refreshWeatherData() {
+        if (location != null) {
+            location.fetchLocation();
+        }
+        swipeRefreshLayout.setRefreshing(false);
+    }
+
+    @Override
+    public void onLocationRetrieved(double latitude, double longitude, String cityName) {
+        if (cityName != null && !cityName.isEmpty()) {
+            getCurrentWeather(cityName, mainLayout);
+        } else {
+            temperatureTextView.setText("Nie udało się pobrać nazwy miasta");
+        }
+    }
+
+    @Override
+    public void onLocationError(String errorMessage) {
+        Log.e(TAG, "Error retrieving location: " + errorMessage);
+        temperatureTextView.setText("Nie udało się pobrać lokalizacji");
     }
 
     private void getCurrentWeather(String city, ConstraintLayout mainLayout) {
@@ -87,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.e(TAG, "Error: " + response.errorBody());
                     temperatureTextView.setText("Nie udało się załadować pogody");
                 }
+                swipeRefreshLayout.setRefreshing(false);
             }
 
             @Override
@@ -171,11 +228,34 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
     private boolean isNight(long sunrise, long sunset) {
         long currentTime = System.currentTimeMillis() / 1000;
         return currentTime < sunrise || currentTime > sunset;
     }
 
+    // Popupy:
+    private boolean isLocationEnabled() {
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        return locationManager != null && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+    }
 
+    private boolean isInternetConnected() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        Network network = connectivityManager.getActiveNetwork();
+        NetworkCapabilities capabilities = connectivityManager.getNetworkCapabilities(network);
+        return capabilities != null && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+    }
+
+    private void showEnableSettingsDialog(String title, String message, Intent settingsIntent) {
+        new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("Włącz", (dialog, which) -> {startActivityForResult(settingsIntent, 0);})
+                .setNegativeButton("Anuluj", (dialog, which) -> {
+                    dialog.dismiss();
+                    finish(); // Zamknij aplikację, jeśli użytkownik nie chce włączyć wymaganej funkcji
+                })
+                .create()
+                .show();
+    }
 }

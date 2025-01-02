@@ -8,6 +8,6 @@ public interface WeatherApiService {
     Call<WeatherResponse> getCurrentWeather(
             @Query("q") String city,
             @Query("appid") String apiKey,
-            @Query("units") String metric // Możesz użyć "metric" dla °C
+            @Query("units") String metric
     );
 }
