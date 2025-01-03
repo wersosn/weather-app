@@ -6,13 +6,12 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
@@ -23,8 +22,9 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.example.projektsm.R;
 import com.example.projektsm.api.RetrofitClient;
 import com.example.projektsm.api.WeatherApiService;
-import com.example.projektsm.api.model.WeatherResponse;
+import com.example.projektsm.api.WeatherResponse;
 import com.example.projektsm.sensors.LocationActivity;
+import com.example.projektsm.db.CityActivity;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -38,27 +38,22 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
     private ConstraintLayout mainLayout;
     private LocationActivity location;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private Button locationButton, listButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Sprawdzanie czy jest dostęp do Internetu i Lokalizacji (póki co zawsze, potem zmienić to na pokazywanie się tylko raz)
-        if (!isLocationEnabled()) {
-            showEnableSettingsDialog("Włącz lokalizację", "Aplikacja wymaga włączenia lokalizacji. Czy chcesz ją włączyć?", new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-        } else {
-            if (!isInternetConnected()) {
-                showEnableSettingsDialog("Włącz internet", "Aplikacja wymaga połączenia z internetem. Czy chcesz włączyć Wi-Fi?", new Intent(Settings.ACTION_WIFI_SETTINGS));
-            }
+        // Sprawdzanie czy jest dostęp do Internetu (póki co zawsze, potem zmienić to na pokazywanie się tylko raz)
+        if (!isInternetConnected()) {
+            showEnableSettingsDialog("Włącz internet", "Aplikacja wymaga połączenia z internetem. Czy chcesz włączyć Wi-Fi?", new Intent(Settings.ACTION_WIFI_SETTINGS));
         }
-
-        // Inicjalizacja obsługi lokalizacji
-        location = new LocationActivity(this, this);
-        location.requestLocationPermissionAndFetch(this);
 
         // Ustawienie widoków
         setContentView(R.layout.activity_main);
         mainLayout = findViewById(R.id.main_layout);
+        locationButton = findViewById(R.id.location_button);
+        listButton = findViewById(R.id.city_list_button);
         temperatureTextView = findViewById(R.id.weatherTextView);
         temperatureFeelsLikeTextView = findViewById(R.id.weather_temp_feels_like);
         pressureTextView = findViewById(R.id.pressure);
@@ -67,15 +62,42 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         visibilityTextView = findViewById(R.id.visibility);
         weatherIcon = findViewById(R.id.weather_icon);
 
+        locationButton.setOnClickListener(v -> requestUserLocation());
+        listButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, CityActivity.class);
+                startActivity(intent);
+            }
+        });
+
         swipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
         swipeRefreshLayout.setOnRefreshListener(() -> {
             refreshWeatherData();
         });
+
+        getCurrentWeather("Warsaw", mainLayout);
+    }
+
+    private void requestUserLocation() {
+        if(!isLocationEnabled()) {
+            locationButton.setVisibility(View.VISIBLE);
+            showEnableSettingsDialog("Włącz lokalizację", "Aplikacja wymaga włączenia lokalizacji. Czy chcesz ją włączyć?", new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+        }
+        else {
+            // Inicjalizacja obsługi lokalizacji
+            locationButton.setVisibility(View.GONE);
+            location = new LocationActivity(this, this);
+            location.requestLocationPermissionAndFetch(this);
+        }
     }
 
     private void refreshWeatherData() {
         if (location != null) {
             location.fetchLocation();
+        }
+        else {
+            getCurrentWeather("Warsaw", mainLayout);
         }
         swipeRefreshLayout.setRefreshing(false);
     }
@@ -86,12 +108,13 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
             getCurrentWeather(cityName, mainLayout);
         } else {
             temperatureTextView.setText("Nie udało się pobrać nazwy miasta");
+            Log.e(TAG, "Nie udało się pobrać miasta (onLocationRetrived)");
         }
     }
 
     @Override
     public void onLocationError(String errorMessage) {
-        Log.e(TAG, "Error retrieving location: " + errorMessage);
+        Log.e(TAG, "Nie udało się pobrać lokalizacji: " + errorMessage);
         temperatureTextView.setText("Nie udało się pobrać lokalizacji");
     }
 
@@ -253,7 +276,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
                 .setPositiveButton("Włącz", (dialog, which) -> {startActivityForResult(settingsIntent, 0);})
                 .setNegativeButton("Anuluj", (dialog, which) -> {
                     dialog.dismiss();
-                    finish(); // Zamknij aplikację, jeśli użytkownik nie chce włączyć wymaganej funkcji
+                    //finish(); // Zamknij aplikację, jeśli użytkownik nie chce włączyć wymaganej funkcji
                 })
                 .create()
                 .show();

@@ -1,4 +1,4 @@
-package com.example.projektsm.api.model;
+package com.example.projektsm.api;
 import com.google.gson.annotations.SerializedName;
 import java.util.List;
 public class WeatherResponse {

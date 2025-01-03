@@ -1,16 +1,23 @@
 package com.example.projektsm.sensors;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
+import android.location.Location;
+//import android.location.LocationRequest;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 
 import java.io.IOException;
@@ -23,6 +30,7 @@ public class LocationActivity {
     private final Context context;
     private final FusedLocationProviderClient fusedLocationClient;
     private final LocationCallbackInterface callbackInterface;
+    private LocationCallback locationCallback;
 
     // Interfejs do przekazywania danych
     public interface LocationCallbackInterface {
@@ -52,7 +60,8 @@ public class LocationActivity {
 
     // Pobieranie ostatniej znanej lokalizacji
     public void fetchLocation() {
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        // Wersja, gdzie nie widzi lokalizacji dopóki nie otworzę np. mapy google
+        /*if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             fusedLocationClient.getLastLocation()
                     .addOnSuccessListener(location -> {
                         if (location != null) {
@@ -60,11 +69,48 @@ public class LocationActivity {
                             double longitude = location.getLongitude();
                             String cityName = getCityFromLocation(latitude, longitude);
                             callbackInterface.onLocationRetrieved(latitude, longitude, cityName);
+                            Log.d(TAG, "latitude: " + latitude + "longitude: " + longitude + "miasto: " + cityName);
                         } else {
-                            callbackInterface.onLocationError("Nie udało się pobrać lokalizacji");
+                            callbackInterface.onLocationError("Nie udało się pobrać lokalizacji (callback)");
+                            Log.e(TAG, "Nie udało się pobrać lokalizacji (callback)");
                         }
                     })
                     .addOnFailureListener(e -> callbackInterface.onLocationError("Error podczas pobierania lokalizacji: " + e.getMessage()));
+        } else {
+            callbackInterface.onLocationError("Brak uprawnień do lokalizacji");
+        }*/
+
+        // Wersja, gdzie potrzeba chwili na to aby zajarzyło
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            LocationRequest locationRequest = LocationRequest.create();
+            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+            locationRequest.setInterval(10000); // Co 10 sekund
+            locationRequest.setFastestInterval(5000); // Minimalny czas między aktualizacjami
+
+            // Utwórz instancję LocationCallback tylko raz
+            if (locationCallback == null) {
+                locationCallback = new LocationCallback() {
+                    @Override
+                    public void onLocationResult(LocationResult locationResult) {
+                        if (locationResult != null) {
+                            fusedLocationClient.removeLocationUpdates(locationCallback); // Zatrzymanie aktualizacji
+                            Location location = locationResult.getLastLocation();
+                            if (location != null) {
+                                double latitude = location.getLatitude();
+                                double longitude = location.getLongitude();
+                                String cityName = getCityFromLocation(latitude, longitude);
+                                callbackInterface.onLocationRetrieved(latitude, longitude, cityName);
+                                Log.d(TAG, "latitude: " + latitude + ", longitude: " + longitude + ", city: " + cityName);
+                            } else {
+                                callbackInterface.onLocationError("Nie udało się pobrać lokalizacji (callback)");
+                            }
+                        }
+                    }
+                };
+            }
+
+            // Żądanie aktualizacji lokalizacji
+            fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
         } else {
             callbackInterface.onLocationError("Brak uprawnień do lokalizacji");
         }
