@@ -47,41 +47,6 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/weatherTextView" />
 
-                <!-- Sekcja: Temperatury godzinowe z ikonami -->
-                <LinearLayout
-                    android:id="@+id/hourly_forecast_layout"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/weather_temp_feels_like">
-
-                    <!-- Przykładowy układ dla jednej godziny -->
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="8dp"
-                        android:orientation="vertical">
-
-                        <ImageView
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:src="@drawable/icon_01d" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:text="12°C"
-                            android:textSize="14sp" />
-                    </LinearLayout>
-
-                    <!-- Powiel powyższy blok dla kolejnych godzin -->
-                </LinearLayout>
-
                 <!-- Sekcja: Kwadraty na dodatkowe dane -->
                 <androidx.gridlayout.widget.GridLayout
                     android:id="@+id/weather_details_grid"
@@ -91,7 +56,7 @@
                     app:columnCount="2"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/hourly_forecast_layout"
+                    app:layout_constraintTop_toBottomOf="@id/weather_temp_feels_like"
                     app:rowCount="2">
 
                     <!-- Kwadrat 1: Ciśnienie -->

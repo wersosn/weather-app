@@ -46,6 +46,7 @@ public class WeatherResponse {
         return sys;
     }
 
+
     public static class Main {
         @SerializedName("temp")
         private float temperature;

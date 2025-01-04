@@ -16,6 +16,9 @@ public interface ICity {
     @Query("SELECT * FROM cities")
     List<City> getAllCities();
 
+    @Query("SELECT * FROM cities WHERE name = :cityName LIMIT 1")
+    City getCityByName(String cityName);
+
     @Delete
     void delete(City city);
 }

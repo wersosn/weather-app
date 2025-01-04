@@ -2,6 +2,8 @@ package com.example.projektsm.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
@@ -29,6 +31,7 @@ import com.example.projektsm.db.DataBase;
 import com.example.projektsm.sensors.LocationActivity;
 import com.example.projektsm.db.CityActivity;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -120,6 +123,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
             locationButton.setVisibility(View.GONE);
             location = new LocationActivity(this, this);
             location.requestLocationPermissionAndFetch(this);
+
         }
     }
 
@@ -145,6 +149,10 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
     public void onLocationRetrieved(double latitude, double longitude, String cityName) {
         if (cityName != null && !cityName.isEmpty()) {
             getCurrentWeather(cityName, mainLayout);
+            City existingCity = db.icity().getCityByName(cityName);
+            if(existingCity == null) {
+                db.icity().insert(new City(cityName));
+            }
         } else {
             temperatureTextView.setText("Nie udało się pobrać nazwy miasta");
             Log.e(TAG, "Nie udało się pobrać miasta (onLocationRetrived)");

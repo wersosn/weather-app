@@ -60,26 +60,6 @@ public class LocationActivity {
 
     // Pobieranie ostatniej znanej lokalizacji
     public void fetchLocation() {
-        // Wersja, gdzie nie widzi lokalizacji dopóki nie otworzę np. mapy google
-        /*if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            fusedLocationClient.getLastLocation()
-                    .addOnSuccessListener(location -> {
-                        if (location != null) {
-                            double latitude = location.getLatitude();
-                            double longitude = location.getLongitude();
-                            String cityName = getCityFromLocation(latitude, longitude);
-                            callbackInterface.onLocationRetrieved(latitude, longitude, cityName);
-                            Log.d(TAG, "latitude: " + latitude + "longitude: " + longitude + "miasto: " + cityName);
-                        } else {
-                            callbackInterface.onLocationError("Nie udało się pobrać lokalizacji (callback)");
-                            Log.e(TAG, "Nie udało się pobrać lokalizacji (callback)");
-                        }
-                    })
-                    .addOnFailureListener(e -> callbackInterface.onLocationError("Error podczas pobierania lokalizacji: " + e.getMessage()));
-        } else {
-            callbackInterface.onLocationError("Brak uprawnień do lokalizacji");
-        }*/
-
         // Wersja, gdzie potrzeba chwili na to aby zajarzyło
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             LocationRequest locationRequest = LocationRequest.create();
