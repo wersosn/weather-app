@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.room.Room;
 
 import com.example.projektsm.R;
+import com.example.projektsm.ui.MainActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.List;
 public class CityActivity extends AppCompatActivity {
     private DataBase db;
     private CityAdapter cityAdapter;
+    private MainActivity refresh;
     private List<City> cityList = new ArrayList<>();
 
     @Override
@@ -30,9 +32,20 @@ public class CityActivity extends AppCompatActivity {
         cityAdapter = new CityAdapter(this, cityList);
         listView.setAdapter(cityAdapter);
 
+        // Obsługa przycisku do dodawania miasta
         Button addCityButton = findViewById(R.id.add_city_button);
         addCityButton.setOnClickListener(v -> {
             Intent intent = new Intent(this, AddCityActivity.class);
+            startActivity(intent);
+        });
+
+        // Obsługa kliknięcia na miasto
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            City selectedCity = cityList.get(position);
+            String cityName = selectedCity.getName();
+
+            Intent intent = new Intent(CityActivity.this, MainActivity.class);
+            intent.putExtra("city_name", cityName);
             startActivity(intent);
         });
 

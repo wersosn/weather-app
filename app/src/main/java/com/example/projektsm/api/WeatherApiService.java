@@ -9,4 +9,12 @@ public interface WeatherApiService {
             @Query("appid") String apiKey,
             @Query("units") String metric
     );
+
+    @GET("onecall")
+    Call<HourlyWeatherResponse> getHourlyForecast(
+            @Query("q") String cityName,
+            @Query("appid") String apiKey,
+            @Query("units") String units
+    );
+
 }

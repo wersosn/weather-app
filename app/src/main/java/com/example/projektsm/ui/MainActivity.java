@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
     private Button locationButton, listButton;
     private List<City> cityList = new ArrayList<>();
     private DataBase db;
+    private String cityName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         mainLayout = findViewById(R.id.main_layout);
         locationButton = findViewById(R.id.location_button);
         listButton = findViewById(R.id.city_list_button);
+
         temperatureTextView = findViewById(R.id.weatherTextView);
         temperatureFeelsLikeTextView = findViewById(R.id.weather_temp_feels_like);
         pressureTextView = findViewById(R.id.pressure);
@@ -85,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         });
 
         loadCities();
+        cityName = getIntent().getStringExtra("city_name");
 
         // Sprawdzenie, czy są dostępne jakieś miasta w bazie
         if (cityList.isEmpty()) {
@@ -92,6 +95,12 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         } else {
             getCurrentWeather(cityList.get(0).getName(), mainLayout);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        refreshWeatherData();
     }
 
     private void loadCities() {
@@ -114,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         }
     }
 
-    private void refreshWeatherData() {
+    public void refreshWeatherData() {
         if (cityList.isEmpty()) {
             if (isLocationEnabled()) {
                 location.fetchLocation();
@@ -122,7 +131,12 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
                 getCurrentWeather("Warsaw", mainLayout);
             }
         } else {
-            getCurrentWeather(cityList.get(0).getName(), mainLayout);
+            if(cityName == null) {
+                getCurrentWeather(cityList.get(0).getName(), mainLayout);
+            }
+            else {
+                getCurrentWeather(cityName, mainLayout);
+            }
         }
         swipeRefreshLayout.setRefreshing(false);
     }
@@ -201,31 +215,6 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         });
     }
 
-    /*private void getWeatherForCities() {
-        WeatherApiService weatherApi = RetrofitClient.getClient().create(WeatherApiService.class);
-
-        for (City city : cityList) {
-            // Pobieranie pogody dla każdego miasta
-            Call<WeatherResponse> call = weatherApi.getCurrentWeather(city.getName(), API_KEY, "metric");
-            call.enqueue(new Callback<WeatherResponse>() {
-                @Override
-                public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        WeatherResponse weather = response.body();
-                        getCurrentWeather(String.valueOf(city), mainLayout);
-                    } else {
-                        Log.e(TAG, "Error: " + response.errorBody());
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<WeatherResponse> call, Throwable t) {
-                    Log.e(TAG, "Błąd połączenia z API: " + t.getMessage());
-                }
-            });
-        }
-    }*/
-    
     private int getWeatherIcon(String iconCode) {
         switch (iconCode) {
             case "01d":
