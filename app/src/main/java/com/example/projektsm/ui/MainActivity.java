@@ -2,8 +2,8 @@ package com.example.projektsm.ui;
 
 import android.content.Context;
 import android.content.Intent;
-import android.location.Address;
-import android.location.Geocoder;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
@@ -11,9 +11,11 @@ import android.net.NetworkCapabilities;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
@@ -23,6 +25,7 @@ import androidx.room.Room;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.projektsm.R;
+import com.example.projektsm.api.ForecastResponse;
 import com.example.projektsm.api.RetrofitClient;
 import com.example.projektsm.api.WeatherApiService;
 import com.example.projektsm.api.WeatherResponse;
@@ -31,9 +34,14 @@ import com.example.projektsm.db.DataBase;
 import com.example.projektsm.sensors.LocationActivity;
 import com.example.projektsm.db.CityActivity;
 
-import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -47,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
     private ConstraintLayout mainLayout;
     private LocationActivity location;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private Button locationButton, listButton;
+    private Button locationButtonOff, locationButtonOn, listButton;
     private List<City> cityList = new ArrayList<>();
     private DataBase db;
     private String cityName;
@@ -64,8 +72,22 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         // Ustawienie widoków
         setContentView(R.layout.activity_main);
         mainLayout = findViewById(R.id.main_layout);
-        locationButton = findViewById(R.id.location_button);
+        locationButtonOff = findViewById(R.id.location_button_off);
+        locationButtonOn = findViewById(R.id.location_button_on);
+        locationButtonOn.setVisibility(View.GONE);
         listButton = findViewById(R.id.city_list_button);
+
+        // Ustawienie odpowiedniej ikony oznaczającej włączoną/wyłączoną lokalizację
+        if(isLocationEnabled()) {
+            if (locationButtonOn.getVisibility() != View.GONE) {
+                locationButtonOn.setVisibility(View.GONE);
+                locationButtonOff.setVisibility(View.VISIBLE);
+            }
+            else {
+                locationButtonOff.setVisibility(View.GONE);
+                locationButtonOn.setVisibility(View.VISIBLE);
+            }
+        }
 
         temperatureTextView = findViewById(R.id.weatherTextView);
         temperatureFeelsLikeTextView = findViewById(R.id.weather_temp_feels_like);
@@ -75,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         visibilityTextView = findViewById(R.id.visibility);
         weatherIcon = findViewById(R.id.weather_icon);
 
-        locationButton.setOnClickListener(v -> requestUserLocation());
+        locationButtonOff.setOnClickListener(v -> requestUserLocation());
         listButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -89,14 +111,17 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
             refreshWeatherData();
         });
 
+
         loadCities();
         cityName = getIntent().getStringExtra("city_name");
 
         // Sprawdzenie, czy są dostępne jakieś miasta w bazie
         if (cityList.isEmpty()) {
             getCurrentWeather("Warsaw", mainLayout);
+            getFiveDayForecast("Warsaw");
         } else {
             getCurrentWeather(cityList.get(0).getName(), mainLayout);
+            getFiveDayForecast(cityList.get(0).getName());
         }
     }
 
@@ -115,15 +140,16 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
 
     private void requestUserLocation() {
         if(!isLocationEnabled()) {
-            locationButton.setVisibility(View.VISIBLE);
+            locationButtonOn.setVisibility(View.GONE);
+            locationButtonOff.setVisibility(View.VISIBLE);
             showEnableSettingsDialog("Włącz lokalizację", "Aplikacja wymaga włączenia lokalizacji. Czy chcesz ją włączyć?", new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
         }
         else {
             // Inicjalizacja obsługi lokalizacji
-            locationButton.setVisibility(View.GONE);
+            locationButtonOff.setVisibility(View.GONE);
+            locationButtonOn.setVisibility(View.VISIBLE);
             location = new LocationActivity(this, this);
             location.requestLocationPermissionAndFetch(this);
-
         }
     }
 
@@ -133,13 +159,16 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
                 location.fetchLocation();
             } else {
                 getCurrentWeather("Warsaw", mainLayout);
+                getFiveDayForecast("Warsaw");
             }
         } else {
             if(cityName == null) {
                 getCurrentWeather(cityList.get(0).getName(), mainLayout);
+                getFiveDayForecast(cityList.get(0).getName());
             }
             else {
                 getCurrentWeather(cityName, mainLayout);
+                getFiveDayForecast(cityName);
             }
         }
         swipeRefreshLayout.setRefreshing(false);
@@ -149,6 +178,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
     public void onLocationRetrieved(double latitude, double longitude, String cityName) {
         if (cityName != null && !cityName.isEmpty()) {
             getCurrentWeather(cityName, mainLayout);
+            getFiveDayForecast(cityName);
             City existingCity = db.icity().getCityByName(cityName);
             if(existingCity == null) {
                 db.icity().insert(new City(cityName));
@@ -223,6 +253,117 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         });
     }
 
+    // Pogoda na kolejne 5 dni:
+    private void getFiveDayForecast(String city) {
+        WeatherApiService weatherApi = RetrofitClient.getClient().create(WeatherApiService.class);
+        Call<ForecastResponse> call = weatherApi.getFiveDayForecast(city, API_KEY, "metric");
+
+        call.enqueue(new Callback<ForecastResponse>() {
+            @Override
+            public void onResponse(Call<ForecastResponse> call, Response<ForecastResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ForecastResponse forecastResponse = response.body();
+                    displayDailyForecast(forecastResponse.getList());
+                } else {
+                    Log.e(TAG, "Error: " + response.errorBody());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ForecastResponse> call, Throwable t) {
+                Log.e(TAG, "Błąd połączenia z API: " + t.getMessage());
+            }
+        });
+    }
+
+    // Wyświetlanie pogody na kolejne 5 dni
+    private void displayDailyForecast(List<ForecastResponse.Forecast> forecasts) {
+        LinearLayout dailyLayout = findViewById(R.id.daily_forecast_layout);
+        dailyLayout.removeAllViews();
+
+        Map<String, List<ForecastResponse.Forecast>> dailyForecastMap = new LinkedHashMap<>();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        for (ForecastResponse.Forecast forecast : forecasts) {
+            String date = sdf.format(new Date(forecast.getDt() * 1000L));
+            if (!dailyForecastMap.containsKey(date)) {
+                dailyForecastMap.put(date, new ArrayList<>());
+            }
+            dailyForecastMap.get(date).add(forecast);
+        }
+
+        // Przetwarzanie każdego dnia
+        for (Map.Entry<String, List<ForecastResponse.Forecast>> entry : dailyForecastMap.entrySet()) {
+            String date = entry.getKey();
+            List<ForecastResponse.Forecast> dailyForecasts = entry.getValue();
+            double avgTemp = 0;
+            String iconCode = null;
+            for (ForecastResponse.Forecast dailyForecast : dailyForecasts) {
+                avgTemp += dailyForecast.getMain().getTemp();
+                if (iconCode == null) iconCode = dailyForecast.getWeather().get(0).getIcon();
+            }
+            avgTemp /= dailyForecasts.size();
+
+            // Tworzenie układu dla jednego dnia
+            LinearLayout dayLayout = new LinearLayout(this);
+            dayLayout.setOrientation(LinearLayout.VERTICAL);
+            LinearLayout.LayoutParams dayLayoutParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            dayLayoutParams.setMargins(20, 0, 20, 0);
+            dayLayout.setLayoutParams(dayLayoutParams);
+            dayLayout.setGravity(Gravity.CENTER);
+
+            // Data
+            TextView dateText = new TextView(this);
+            dateText.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            ));
+            dateText.setGravity(Gravity.CENTER);
+            dateText.setText(getDayOfWeek(date));
+            dateText.setTextSize(18);
+            dateText.setTypeface(null, Typeface.BOLD);
+            dateText.setTextColor(Color.BLACK);
+
+            // Ikona pogody
+            ImageView weatherIcon = new ImageView(this);
+            int iconSize = 80;
+            weatherIcon.setLayoutParams(new LinearLayout.LayoutParams(iconSize, iconSize));
+            int iconResId = getWeatherIconWeek(iconCode);
+            weatherIcon.setImageResource(iconResId);
+
+            // Temperatura
+            TextView tempText = new TextView(this);
+            tempText.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            ));
+            tempText.setGravity(Gravity.CENTER);
+            tempText.setText(Math.round(avgTemp) + "°C");
+            tempText.setTextSize(16);
+            tempText.setTextColor(Color.BLACK);
+
+            dayLayout.addView(dateText);
+            dayLayout.addView(weatherIcon);
+            dayLayout.addView(tempText);
+            dailyLayout.addView(dayLayout);
+        }
+    }
+
+
+    private String getDayOfWeek(String date) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        SimpleDateFormat dayFormat = new SimpleDateFormat("EEE", Locale.getDefault());
+        try {
+            Date parsedDate = sdf.parse(date);
+            return dayFormat.format(parsedDate);
+        } catch (ParseException e) {
+            Log.e(TAG, "Parse error" + e.getMessage());
+            return "";
+        }
+    }
+
     private int getWeatherIcon(String iconCode) {
         switch (iconCode) {
             case "01d":
@@ -259,6 +400,39 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         }
     }
 
+    private int getWeatherIconWeek(String iconCode) {
+        switch (iconCode) {
+            case "01d":
+            case "01n":
+                return R.drawable.icon_01d;
+            case "02d":
+            case "02n":
+                return R.drawable.icon_02d;
+            case "03d":
+            case "03n":
+            case "04d":
+            case "04n":
+                return R.drawable.icon_03d;
+            case "09d":
+            case "09n":
+                return R.drawable.icon_09d;
+            case "10d":
+            case "10n":
+                return R.drawable.icon_10d;
+            case "11d":
+            case "11n":
+                return R.drawable.icon_11d;
+            case "13d":
+            case "13n":
+                return R.drawable.icon_13d;
+            case "50d":
+            case "50n":
+                return R.drawable.icon_50d;
+
+            default: return R.drawable.icon_01d;
+        }
+    }
+
     private int updateBackground(String weatherCondition, boolean isNight) {
         if (isNight) {
             return R.drawable.night_gradient;
@@ -266,12 +440,12 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
             switch (weatherCondition.toLowerCase()) {
                 case "clear":
                     return R.drawable.sunny_gradient;
+                case "clouds":
                 case "rain":
                 case "drizzle":
                     return R.drawable.rainy_gradient;
                 case "thunderstorm":
                     return R.drawable.storm_gradient;
-                case "clouds":
                 case "snow":
                     return R.drawable.snow_gradient;
                 default:
@@ -323,7 +497,6 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
                 .setPositiveButton("Włącz", (dialog, which) -> {startActivityForResult(settingsIntent, 0);})
                 .setNegativeButton("Anuluj", (dialog, which) -> {
                     dialog.dismiss();
-                    //finish(); // Zamknij aplikację, jeśli użytkownik nie chce włączyć wymaganej funkcji
                 })
                 .create()
                 .show();

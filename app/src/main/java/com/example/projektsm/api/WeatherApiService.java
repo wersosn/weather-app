@@ -9,4 +9,12 @@ public interface WeatherApiService {
             @Query("appid") String apiKey,
             @Query("units") String metric
     );
+
+    @GET("forecast")
+    Call<ForecastResponse> getFiveDayForecast(
+            @Query("q") String city,
+            @Query("appid") String apiKey,
+            @Query("units") String metric
+    );
+
 }
