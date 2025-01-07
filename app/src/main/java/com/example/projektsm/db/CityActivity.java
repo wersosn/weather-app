@@ -20,6 +20,7 @@ public class CityActivity extends AppCompatActivity {
     private MainActivity refresh;
     private List<City> cityList = new ArrayList<>();
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,6 +51,7 @@ public class CityActivity extends AppCompatActivity {
         });
 
         loadCities();
+
     }
 
     private void loadCities() {

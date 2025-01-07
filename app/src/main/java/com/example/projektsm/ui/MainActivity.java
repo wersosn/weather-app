@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
     private Button locationButtonOff, locationButtonOn, listButton;
     private List<City> cityList = new ArrayList<>();
     private DataBase db;
-    private String cityName;
+    private String cityName, locationCityName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,22 +72,8 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         // Ustawienie widoków
         setContentView(R.layout.activity_main);
         mainLayout = findViewById(R.id.main_layout);
-        locationButtonOff = findViewById(R.id.location_button_off);
         locationButtonOn = findViewById(R.id.location_button_on);
-        locationButtonOn.setVisibility(View.GONE);
         listButton = findViewById(R.id.city_list_button);
-
-        // Ustawienie odpowiedniej ikony oznaczającej włączoną/wyłączoną lokalizację
-        if(isLocationEnabled()) {
-            if (locationButtonOn.getVisibility() != View.GONE) {
-                locationButtonOn.setVisibility(View.GONE);
-                locationButtonOff.setVisibility(View.VISIBLE);
-            }
-            else {
-                locationButtonOff.setVisibility(View.GONE);
-                locationButtonOn.setVisibility(View.VISIBLE);
-            }
-        }
 
         temperatureTextView = findViewById(R.id.weatherTextView);
         temperatureFeelsLikeTextView = findViewById(R.id.weather_temp_feels_like);
@@ -97,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         visibilityTextView = findViewById(R.id.visibility);
         weatherIcon = findViewById(R.id.weather_icon);
 
-        locationButtonOff.setOnClickListener(v -> requestUserLocation());
+        locationButtonOn.setOnClickListener(v -> requestUserLocation());
         listButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -116,12 +102,17 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         cityName = getIntent().getStringExtra("city_name");
 
         // Sprawdzenie, czy są dostępne jakieś miasta w bazie
-        if (cityList.isEmpty()) {
+        if (cityList.isEmpty() && !isLocationEnabled()) {
             getCurrentWeather("Warsaw", mainLayout);
             getFiveDayForecast("Warsaw");
-        } else {
+        } else if (!isLocationEnabled()) {
             getCurrentWeather(cityList.get(0).getName(), mainLayout);
             getFiveDayForecast(cityList.get(0).getName());
+        }
+        else if (isLocationEnabled()) {
+            locationButtonOn.setVisibility(View.GONE);
+            location = new LocationActivity(this, this);
+            location.requestLocationPermissionAndFetch(this);
         }
     }
 
@@ -140,14 +131,12 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
 
     private void requestUserLocation() {
         if(!isLocationEnabled()) {
-            locationButtonOn.setVisibility(View.GONE);
-            locationButtonOff.setVisibility(View.VISIBLE);
+            locationButtonOn.setVisibility(View.VISIBLE);
             showEnableSettingsDialog("Włącz lokalizację", "Aplikacja wymaga włączenia lokalizacji. Czy chcesz ją włączyć?", new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
         }
         else {
             // Inicjalizacja obsługi lokalizacji
-            locationButtonOff.setVisibility(View.GONE);
-            locationButtonOn.setVisibility(View.VISIBLE);
+            locationButtonOn.setVisibility(View.GONE);
             location = new LocationActivity(this, this);
             location.requestLocationPermissionAndFetch(this);
         }
@@ -324,7 +313,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
             dateText.setText(getDayOfWeek(date));
             dateText.setTextSize(18);
             dateText.setTypeface(null, Typeface.BOLD);
-            dateText.setTextColor(Color.BLACK);
+            dateText.setTextColor(Color.WHITE);
 
             // Ikona pogody
             ImageView weatherIcon = new ImageView(this);
@@ -342,7 +331,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
             tempText.setGravity(Gravity.CENTER);
             tempText.setText(Math.round(avgTemp) + "°C");
             tempText.setTextSize(16);
-            tempText.setTextColor(Color.BLACK);
+            tempText.setTextColor(Color.WHITE);
 
             dayLayout.addView(dateText);
             dayLayout.addView(weatherIcon);

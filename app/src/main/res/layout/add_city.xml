@@ -15,5 +15,25 @@
         android:id="@+id/save_city_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Zapisz" />
+        android:text="Dodaj miasto" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#D3D3D3" />
+
+    <TextView
+        android:id="@+id/suggested_cities_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Sugerowane miasta:"
+        android:textSize="16sp"
+        android:paddingTop="16dp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/suggested_cities_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="vertical" />
 </LinearLayout>
