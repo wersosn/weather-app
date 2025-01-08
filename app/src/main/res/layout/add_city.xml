@@ -9,13 +9,13 @@
         android:id="@+id/city_name_input"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:hint="Wpisz nazwę miasta" />
+        android:hint="@string/input" />
 
     <Button
         android:id="@+id/save_city_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Dodaj miasto" />
+        android:text="@string/add_city" />
 
     <View
         android:layout_width="match_parent"
@@ -26,7 +26,7 @@
         android:id="@+id/suggested_cities_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Sugerowane miasta:"
+        android:text="@string/polish_cities"
         android:textSize="16sp"
         android:paddingTop="16dp" />
 

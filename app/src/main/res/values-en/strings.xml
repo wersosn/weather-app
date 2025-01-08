@@ -1,4 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Weather App</string>
+
+    <!--activity_main-->
+    <string name="temp_loading">Loading temperature...</string>
+    <string name="pressure_loading">Loading pressure...</string>
+    <string name="humidity_loading">Loading humidity...</string>
+    <string name="wind_loading">Loading wind...</string>
+    <string name="visibility_loading">Loading visibility...</string>
+
+    <string name="temperature_in">Temperature in %1$s: %2$d°C</string>
+    <string name="feels_like_temperature">Feels like temperature: %1$d°C</string>
+    <string name="pressure">Pressure: %1$d hPa</string>
+    <string name="humidity">Humidity: %1$d%%</string>
+    <string name="wind">Wind: %1$.2f m/s</string>
+    <string name="visibility">Visibility: %1$.2f km</string>
+
+    <!--activity_city-->
+    <string name="add_city">Add city</string>
+    <string name="city_list">List of saved cities:</string>
+
+    <!--add_city-->
+    <string name="input">Enter city name</string>
+    <string name="polish_cities">Suggested cities:</string>
+
+    <!--city_item-->
+    <string name="city">City</string>
+
+    <!--komunikaty-->
+
+    <!--powiadomienia-->
+    <string name="notif_title">Weather in: %s</string>
+    <string name="notif_desc">Current temperature: %s°C/%s°C</string>
 </resources>

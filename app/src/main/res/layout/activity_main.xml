@@ -54,7 +54,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Ładowanie temperatury..."
+                android:text="@string/temp_loading"
                 android:textSize="18sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -65,7 +65,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Ładowanie temperatury..."
+                android:text="@string/temp_loading"
                 android:textSize="18sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -156,7 +156,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="Ładowanie ciśnienia..."
+                        android:text="@string/pressure_loading"
                         android:textSize="14sp" />
                 </LinearLayout>
 
@@ -180,7 +180,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="Ładowanie wilgotności..."
+                        android:text="@string/humidity_loading"
                         android:textSize="14sp" />
                 </LinearLayout>
 
@@ -204,7 +204,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="Ładowanie wiatru..."
+                        android:text="@string/wind_loading"
                         android:textSize="14sp" />
                 </LinearLayout>
 
@@ -228,13 +228,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="Ładowanie widoczności..."
+                        android:text="@string/visibility_loading"
                         android:textSize="14sp" />
                 </LinearLayout>
             </androidx.gridlayout.widget.GridLayout>
-
-
-
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>

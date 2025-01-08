@@ -1,13 +1,18 @@
 package com.example.projektsm.ui;
 
+import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -17,10 +22,16 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 import androidx.room.Room;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -33,6 +44,7 @@ import com.example.projektsm.db.City;
 import com.example.projektsm.db.DataBase;
 import com.example.projektsm.sensors.LocationActivity;
 import com.example.projektsm.db.CityActivity;
+import com.google.android.material.button.MaterialButton;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -55,14 +67,15 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
     private ConstraintLayout mainLayout;
     private LocationActivity location;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private Button locationButtonOff, locationButtonOn, listButton;
+    private Button postNotification, locationButtonOn, listButton;
     private List<City> cityList = new ArrayList<>();
     private DataBase db;
-    private String cityName, locationCityName;
+    private String cityName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
         // Sprawdzanie czy jest dostęp do Internetu (póki co zawsze, potem zmienić to na pokazywanie się tylko raz)
         if (!isInternetConnected()) {
@@ -70,7 +83,6 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         }
 
         // Ustawienie widoków
-        setContentView(R.layout.activity_main);
         mainLayout = findViewById(R.id.main_layout);
         locationButtonOn = findViewById(R.id.location_button_on);
         listButton = findViewById(R.id.city_list_button);
@@ -115,6 +127,48 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
             location.requestLocationPermissionAndFetch(this);
         }
     }
+
+    private final ActivityResultLauncher<String> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
+        @Override
+        public void onActivityResult(Boolean o) {
+            if (o) {
+                Toast.makeText(MainActivity.this, "Pozwolono na wysyłanie powiadomień", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(MainActivity.this, "Nie pozwolono na wysyłanie powiadomień", Toast.LENGTH_SHORT).show();
+            }
+        }
+    });
+
+
+    private void showWeatherNotification(String cityName, String temperature, String feelsLikeTemp, String iconCode) {
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            activityResultLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+        }
+        else {
+            // Tworzenie kanału powiadomień (dla Androida 8.0 i nowszych)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                CharSequence name = getString(R.string.app_name);
+                String description = "Notifications";
+                int importance = NotificationManager.IMPORTANCE_DEFAULT;
+                NotificationChannel channel = new NotificationChannel("weather_channel", name, importance);
+                channel.setDescription(description);
+                notificationManager.createNotificationChannel(channel);
+            }
+        }
+
+
+        // Tworzenie powiadomienia
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "weather_channel")
+                .setSmallIcon(getWeatherIcon(iconCode))
+                .setContentTitle(getString(R.string.notif_title, cityName))
+                .setContentText(getString(R.string.notif_desc, temperature, feelsLikeTemp))
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+        // Wyświetlenie powiadomienia
+        notificationManager.notify(1001, builder.build());
+    }
+
 
     @Override
     protected void onResume() {
@@ -212,12 +266,12 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
                     mainLayout.setBackgroundResource(backgroundResource);
 
                     // Wyświetlanie wartości:
-                    temperatureTextView.setText("Temperatura w " + weather.getCityName() + ": " + temperature + "°C");
-                    temperatureFeelsLikeTextView.setText("Odczuwalna temperatura: " + feelsLikeTemperature + "°C");
-                    pressureTextView.setText("Ciśnienie: " + pressure + "hPa");
-                    humidityTextView.setText("Wilgotność: " + humidity + "%");
-                    windTextView.setText("Wiatr: " + windSpeed + "m/s");
-                    visibilityTextView.setText("Widoczność: " + visibility + "km");
+                    temperatureTextView.setText(getString(R.string.temperature_in, weather.getCityName(), temperature));
+                    temperatureFeelsLikeTextView.setText(getString(R.string.feels_like_temperature, feelsLikeTemperature));
+                    pressureTextView.setText(getString(R.string.pressure, pressure));
+                    humidityTextView.setText(getString(R.string.humidity, humidity));
+                    windTextView.setText(getString(R.string.wind, windSpeed));
+                    visibilityTextView.setText(getString(R.string.visibility, visibility));
                     weatherIcon.setImageResource(getWeatherIcon(iconCode));
 
                     // Zmiana koloru tekstu w zależności od pogody:
@@ -228,6 +282,8 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
                     humidityTextView.setTextColor(textColor);
                     windTextView.setTextColor(textColor);
                     visibilityTextView.setTextColor(textColor);
+
+                    showWeatherNotification(city, String.valueOf(temperature), String.valueOf(feelsLikeTemperature), iconCode);
                 } else {
                     Log.e(TAG, "Error: " + response.errorBody());
                     temperatureTextView.setText("Nie udało się załadować pogody");

@@ -10,7 +10,7 @@
         android:id="@+id/city_name_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Miasto"
+        android:text="@string/city"
         android:textSize="18sp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"

@@ -1,3 +1,34 @@
 <resources>
     <string name="app_name">Aplikacja pogodowa</string>
+
+    <!--activity_main-->
+    <string name="temp_loading">Ładowanie temperatury...</string>
+    <string name="pressure_loading">Ładowanie ciśnienia...</string>
+    <string name="humidity_loading">Ładowanie wilgotności...</string>
+    <string name="wind_loading">Ładowanie wiatru...</string>
+    <string name="visibility_loading">Ładowanie widoczności...</string>
+
+    <string name="temperature_in">Temperatura w %1$s: %2$d°C</string>
+    <string name="feels_like_temperature">Odczuwalna temperatura: %1$d°C</string>
+    <string name="pressure">Ciśnienie: %1$d hPa</string>
+    <string name="humidity">Wilgotność: %1$d%%</string>
+    <string name="wind">Wiatr: %1$.2f m/s</string>
+    <string name="visibility">Widoczność: %1$.2f km</string>
+
+    <!--activity_city-->
+    <string name="add_city">Dodaj miasto</string>
+    <string name="city_list">Lista zapisanych miast:</string>
+
+    <!--add_city-->
+    <string name="input">Wpisz nazwę miasta</string>
+    <string name="polish_cities">Sugerowane miasta:</string>
+
+    <!--city_item-->
+    <string name="city">Miasto</string>
+
+    <!--komunikaty-->
+
+    <!--powiadomienia-->
+    <string name="notif_title">Pogoda w: %s</string>
+    <string name="notif_desc">Obecna temperatura: %s°C/%s°C</string>
 </resources>
