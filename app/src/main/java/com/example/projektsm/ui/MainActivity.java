@@ -5,6 +5,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -73,19 +74,37 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
     private String cityName;
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (cityName != null) {
+            outState.putString("savedCityName", cityName);
+        }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        cityName = savedInstanceState.getString("savedCityName", null);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Sprawdzanie czy jest dostęp do Internetu (póki co zawsze, potem zmienić to na pokazywanie się tylko raz)
+        // Sprawdzanie czy jest dostęp do Internetu
         if (!isInternetConnected()) {
-            showEnableSettingsDialog("Włącz internet", "Aplikacja wymaga połączenia z internetem. Czy chcesz włączyć Wi-Fi?", new Intent(Settings.ACTION_WIFI_SETTINGS));
+            showEnableSettingsDialog(getString(R.string.enable_internet), getString(R.string.enable_internet_message), new Intent(Settings.ACTION_WIFI_SETTINGS));
         }
 
         // Ustawienie widoków
         mainLayout = findViewById(R.id.main_layout);
         locationButtonOn = findViewById(R.id.location_button_on);
         listButton = findViewById(R.id.city_list_button);
+
+        if (isLocationEnabled()) {
+            locationButtonOn.setVisibility(View.GONE);
+        }
 
         temperatureTextView = findViewById(R.id.weatherTextView);
         temperatureFeelsLikeTextView = findViewById(R.id.weather_temp_feels_like);
@@ -109,22 +128,32 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
             refreshWeatherData();
         });
 
+        if (savedInstanceState != null) {
+            cityName = savedInstanceState.getString("savedCityName", null);
+            Log.d(TAG, "Ostatnie miasto: " + cityName);
+        }
+        else {
+            loadCities();
+            cityName = getIntent().getStringExtra("city_name");
+        }
 
-        loadCities();
-        cityName = getIntent().getStringExtra("city_name");
-
+        Log.d(TAG, "Miasto: " + cityName);
         // Sprawdzenie, czy są dostępne jakieś miasta w bazie
-        if (cityList.isEmpty() && !isLocationEnabled()) {
+        if (cityName == null && !isLocationEnabled() && cityList.isEmpty()) {
             getCurrentWeather("Warsaw", mainLayout);
             getFiveDayForecast("Warsaw");
-        } else if (!isLocationEnabled()) {
+        } else if (cityName == null && !isLocationEnabled()) {
             getCurrentWeather(cityList.get(0).getName(), mainLayout);
             getFiveDayForecast(cityList.get(0).getName());
         }
-        else if (isLocationEnabled()) {
-            locationButtonOn.setVisibility(View.GONE);
+        else if(cityName != null) {
+            getCurrentWeather(cityName, mainLayout);
+            getFiveDayForecast(cityName);
+        }
+        else if(isLocationEnabled()) {
             location = new LocationActivity(this, this);
             location.requestLocationPermissionAndFetch(this);
+            Log.d(TAG, "Lokalizacja: " + location);
         }
     }
 
@@ -132,9 +161,9 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         @Override
         public void onActivityResult(Boolean o) {
             if (o) {
-                Toast.makeText(MainActivity.this, "Pozwolono na wysyłanie powiadomień", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, R.string.notif_enabled, Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(MainActivity.this, "Nie pozwolono na wysyłanie powiadomień", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, R.string.notif_disabled, Toast.LENGTH_SHORT).show();
             }
         }
     });
@@ -186,7 +215,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
     private void requestUserLocation() {
         if(!isLocationEnabled()) {
             locationButtonOn.setVisibility(View.VISIBLE);
-            showEnableSettingsDialog("Włącz lokalizację", "Aplikacja wymaga włączenia lokalizacji. Czy chcesz ją włączyć?", new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+            showEnableSettingsDialog(getString(R.string.enable_location), getString(R.string.enable_location_message), new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
         }
         else {
             // Inicjalizacja obsługi lokalizacji
@@ -198,9 +227,9 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
 
     public void refreshWeatherData() {
         if (cityList.isEmpty()) {
-            if (isLocationEnabled()) {
+            if (isLocationEnabled() && location != null) {
                 location.fetchLocation();
-            } else {
+            } else if (cityName == null && !isLocationEnabled()) {
                 getCurrentWeather("Warsaw", mainLayout);
                 getFiveDayForecast("Warsaw");
             }
@@ -227,7 +256,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
                 db.icity().insert(new City(cityName));
             }
         } else {
-            temperatureTextView.setText("Nie udało się pobrać nazwy miasta");
+            temperatureTextView.setText(R.string.no_city_name);
             Log.e(TAG, "Nie udało się pobrać miasta (onLocationRetrived)");
         }
     }
@@ -235,10 +264,11 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
     @Override
     public void onLocationError(String errorMessage) {
         Log.e(TAG, "Nie udało się pobrać lokalizacji: " + errorMessage);
-        temperatureTextView.setText("Nie udało się pobrać lokalizacji");
+        temperatureTextView.setText(R.string.no_location);
     }
 
     private void getCurrentWeather(String city, ConstraintLayout mainLayout) {
+        cityName = city;
         WeatherApiService weatherApi = RetrofitClient.getClient().create(WeatherApiService.class);
         Call<WeatherResponse> call = weatherApi.getCurrentWeather(city, API_KEY, "metric");
 
@@ -286,7 +316,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
                     showWeatherNotification(city, String.valueOf(temperature), String.valueOf(feelsLikeTemperature), iconCode);
                 } else {
                     Log.e(TAG, "Error: " + response.errorBody());
-                    temperatureTextView.setText("Nie udało się załadować pogody");
+                    temperatureTextView.setText(R.string.no_weather);
                 }
                 swipeRefreshLayout.setRefreshing(false);
             }
@@ -539,8 +569,8 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         new AlertDialog.Builder(this)
                 .setTitle(title)
                 .setMessage(message)
-                .setPositiveButton("Włącz", (dialog, which) -> {startActivityForResult(settingsIntent, 0);})
-                .setNegativeButton("Anuluj", (dialog, which) -> {
+                .setPositiveButton(R.string.turn_on, (dialog, which) -> {startActivityForResult(settingsIntent, 0);})
+                .setNegativeButton(R.string.cancel, (dialog, which) -> {
                     dialog.dismiss();
                 })
                 .create()

@@ -23,13 +23,37 @@
     <!--add_city-->
     <string name="input">Enter city name</string>
     <string name="polish_cities">Suggested cities:</string>
+    <string name="city_added">City added!</string>
+    <string name="city_exists_in_db">City already exists in the database</string>
+    <string name="city_not_found">City not found. Check if the name is correct</string>
+    <string name="error">Error. Try again.</string>
 
     <!--city_item-->
     <string name="city">City</string>
 
-    <!--komunikaty-->
+    <!--popups-->
+    <string name="turn_on">Turn on</string>
+    <string name="cancel">Cancel</string>
 
-    <!--powiadomienia-->
+    <!--internet-->
+    <string name="enable_internet">Enable internet</string>
+    <string name="enable_internet_message">The application requires an internet connection. Would you like to turn on Wi-Fi?</string>
+
+    <!--notifications-->
+    <string name="notif_enabled">Notifications allowed</string>
+    <string name="notif_disabled">Notifications not allowed</string>
+
+    <!--localization-->
+    <string name="enable_location">Enable location</string>
+    <string name="enable_location_message">The app requires location to be enabled. Would you like to enable it?</string>
+
+    <!--notifications-->
     <string name="notif_title">Weather in: %s</string>
     <string name="notif_desc">Current temperature: %s°C/%s°C</string>
+
+    <!--errors-->
+    <string name="no_city_name">Failed to get city name</string>
+    <string name="no_location">Failed to get location</string>
+    <string name="no_weather">Failed to load weather</string>
+    <string name="no_location_permission">No location permission</string>
 </resources>

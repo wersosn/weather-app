@@ -22,13 +22,37 @@
     <!--add_city-->
     <string name="input">Wpisz nazwę miasta</string>
     <string name="polish_cities">Sugerowane miasta:</string>
+    <string name="city_added">Miasto dodane!</string>
+    <string name="city_exists_in_db">Miasto już istnieje w bazie</string>
+    <string name="city_not_found">Nie znaleziono miasta. Sprawdź czy nazwa jest poprawna</string>
+    <string name="error">Wystąpił błąd. Spróbuj ponownie.</string>
 
     <!--city_item-->
     <string name="city">Miasto</string>
 
     <!--komunikaty-->
+    <string name="turn_on">Włącz</string>
+    <string name="cancel">Anuluj</string>
+
+    <!--internet-->
+    <string name="enable_internet">Włącz internet</string>
+    <string name="enable_internet_message">Aplikacja wymaga połączenia z internetem. Czy chcesz włączyć Wi-Fi?</string>
+
+    <!--powiadomienia-->
+    <string name="notif_enabled">Zezwolono na wysyłanie powiadomień</string>
+    <string name="notif_disabled">Nie zezwolono na wysyłanie powiadomień</string>
+
+    <!--lokalizacja-->
+    <string name="enable_location">Włącz lokalizację</string>
+    <string name="enable_location_message">Aplikacja wymaga włączenia lokalizacji. Czy chcesz ją włączyć?</string>
 
     <!--powiadomienia-->
     <string name="notif_title">Pogoda w: %s</string>
     <string name="notif_desc">Obecna temperatura: %s°C/%s°C</string>
+
+    <!--błędy-->
+    <string name="no_city_name">Nie udało się pobrać nazwy miasta</string>
+    <string name="no_location">Nie udało się pobrać lokalizacji</string>
+    <string name="no_weather">Nie udało się załadować pogody</string>
+    <string name="no_location_permission">Brak uprawnień do lokalizacji</string>
 </resources>

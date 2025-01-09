@@ -1,5 +1,7 @@
 package com.example.projektsm.sensors;
 
+import static androidx.core.content.ContextCompat.getString;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -14,6 +16,7 @@ import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 
+import com.example.projektsm.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationCallback;
@@ -82,7 +85,7 @@ public class LocationActivity {
                                 callbackInterface.onLocationRetrieved(latitude, longitude, cityName);
                                 Log.d(TAG, "latitude: " + latitude + ", longitude: " + longitude + ", city: " + cityName);
                             } else {
-                                callbackInterface.onLocationError("Nie udało się pobrać lokalizacji (callback)");
+                                callbackInterface.onLocationError(context.getString(R.string.no_location));
                             }
                         }
                     }
@@ -92,7 +95,7 @@ public class LocationActivity {
             // Żądanie aktualizacji lokalizacji
             fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
         } else {
-            callbackInterface.onLocationError("Brak uprawnień do lokalizacji");
+            callbackInterface.onLocationError(context.getString(R.string.no_location_permission));
         }
     }
 

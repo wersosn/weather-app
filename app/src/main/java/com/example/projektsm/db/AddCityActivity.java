@@ -31,7 +31,7 @@ public class AddCityActivity extends AppCompatActivity {
     private static final String API_KEY = "68d344c1d7699bddc73ed97ae19f8052";
     private final List<String> polishCities = Arrays.asList(
             "Warszawa", "Kraków", "Gdańsk", "Wrocław", "Poznań",
-            "Łódź", "Szczecin", "Katowice", "Lublin", "Bydgoszcz",
+            "Szczecin", "Katowice", "Lublin", "Bydgoszcz",
             "Olsztyn", "Białystok", "Gdynia", "Radom"
     );
 
@@ -51,7 +51,7 @@ public class AddCityActivity extends AppCompatActivity {
             if (!cityName.isEmpty()) {
                 validateAndSaveCity(cityName);
             } else {
-                Toast.makeText(this, "Wprowadź nazwę miasta", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.input, Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -73,21 +73,21 @@ public class AddCityActivity extends AppCompatActivity {
                     City existingCity = db.icity().getCityByName(cityName);
                     if (existingCity == null) {
                         db.icity().insert(new City(cityName));
-                        Toast.makeText(AddCityActivity.this, "Miasto dodane!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(AddCityActivity.this, R.string.city_added, Toast.LENGTH_SHORT).show();
                         finish();
                     } else {
-                        Toast.makeText(AddCityActivity.this, "Miasto już istnieje w bazie", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(AddCityActivity.this, R.string.city_exists_in_db, Toast.LENGTH_SHORT).show();
                     }
                 } else {
                     // Miasto nie istnieje
-                    Toast.makeText(AddCityActivity.this, "Nie znaleziono miasta. Sprawdź czy nazwa jest poprawna", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AddCityActivity.this, R.string.city_not_found, Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<WeatherResponse> call, Throwable t) {
                 Log.e("AddCityActivity", "Błąd API: " + t.getMessage());
-                Toast.makeText(AddCityActivity.this, "Wystąpił błąd. Spróbuj ponownie.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(AddCityActivity.this, R.string.error, Toast.LENGTH_SHORT).show();
             }
         });
     }
