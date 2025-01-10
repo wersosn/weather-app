@@ -8,6 +8,7 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -23,6 +24,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.room.Room;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -65,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
     private Notifications notif;
     private UI UI;
     private Popups popups;
+    private Toolbar toolbar;
 
     /* Zachowanie stanu */
     @Override
@@ -82,19 +85,24 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        refreshWeatherData();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getSupportActionBar().hide();
         setContentView(R.layout.activity_main);
-        popups = new Popups(this);
         notif = new Notifications(this, notificationPermissionLauncher);
         UI = new UI(this);
 
-        setViews();
-
         // Sprawdzanie czy jest dostęp do Internetu
-        if (!popups.isInternetConnected()) {
+        if (!isInternetConnected()) {
             showEnableSettingsDialog(getString(R.string.enable_internet), getString(R.string.enable_internet_message), new Intent(Settings.ACTION_WIFI_SETTINGS));
         }
+        setViews();
 
         // Sprawdzenie, czy są dostępne jakieś miasto
         if (savedInstanceState != null) {
@@ -107,10 +115,10 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         }
 
         // Ustawianie początkowej pogody
-        if (cityName == null && !popups.isLocationEnabled() && cityList.isEmpty()) {
+        if (cityName == null && !isLocationEnabled() && cityList.isEmpty()) {
             getCurrentWeather("Warsaw", mainLayout);
             getFiveDayForecast("Warsaw");
-        } else if (cityName == null && !popups.isLocationEnabled()) {
+        } else if (cityName == null && !isLocationEnabled()) {
             getCurrentWeather(cityList.get(0).getName(), mainLayout);
             getFiveDayForecast(cityList.get(0).getName());
         }
@@ -118,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
             getCurrentWeather(cityName, mainLayout);
             getFiveDayForecast(cityName);
         }
-        else if(popups.isLocationEnabled()) {
+        else if(isLocationEnabled()) {
             location = new LocationActivity(this, this);
             location.requestLocationPermissionAndFetch(this);
             Log.d(TAG, "Lokalizacja: " + location);
@@ -131,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         locationButtonOn = findViewById(R.id.location_button_on);
         listButton = findViewById(R.id.city_list_button);
 
-        if (popups.isLocationEnabled()) {
+        if (isLocationEnabled()) {
             locationButtonOn.setVisibility(View.GONE);
         }
 
@@ -158,12 +166,6 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         });
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        refreshWeatherData();
-    }
-
     private void loadCities() {
         db = Room.databaseBuilder(getApplicationContext(),
                 DataBase.class, "user_database").allowMainThreadQueries().build();
@@ -172,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
     }
 
     private void requestUserLocation() {
-        if(!popups.isLocationEnabled()) {
+        if(!isLocationEnabled()) {
             locationButtonOn.setVisibility(View.VISIBLE);
             showEnableSettingsDialog(getString(R.string.enable_location), getString(R.string.enable_location_message), new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
         }
@@ -185,9 +187,9 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
 
     public void refreshWeatherData() {
         if (cityList.isEmpty()) {
-            if (popups.isLocationEnabled() && location != null) {
+            if (isLocationEnabled() && location != null) {
                 location.fetchLocation();
-            } else if (cityName == null && !popups.isLocationEnabled()) {
+            } else if (cityName == null && !isLocationEnabled()) {
                 getCurrentWeather("Warsaw", mainLayout);
                 getFiveDayForecast("Warsaw");
             }
@@ -387,6 +389,18 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
     }
 
     /* Popupy */
+    public boolean isLocationEnabled() {
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        return locationManager != null && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+    }
+
+    public boolean isInternetConnected() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        Network network = connectivityManager.getActiveNetwork();
+        NetworkCapabilities capabilities = connectivityManager.getNetworkCapabilities(network);
+        return capabilities != null && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+    }
+
     private void showEnableSettingsDialog(String title, String message, Intent settingsIntent) {
         new AlertDialog.Builder(this)
                 .setTitle(title)

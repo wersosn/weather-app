@@ -5,6 +5,59 @@
     android:id="@+id/swipe_refresh_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorPrimary"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            android:elevation="4dp">
+
+            <!-- LinearLayout do rozmieszczenia elementów w toolbarze -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="start|end"> <!-- Elementy będą rozmieszczone po lewej i prawej stronie -->
+
+                <!-- Tytuł Toolbara po lewej stronie -->
+                <TextView
+                    android:id="@+id/toolbar_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_name"
+                    android:textColor="@android:color/white"
+                    android:textSize="20sp"
+                    android:layout_gravity="start"
+                    android:layout_weight="1"
+                    android:paddingTop="15dp"/> <!-- Sprawia, że tekst jest wyświetlany po lewej stronie -->
+
+                <!-- Przycisk lokalizacji -->
+                <Button
+                    android:id="@+id/location_button_on"
+                    android:layout_width="47dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="Włącz lokalizację"
+                    android:drawableLeft="@drawable/location_on" /> <!-- Przycisk po prawej stronie -->
+
+                <!-- Przycisk listy miast -->
+                <Button
+                    android:id="@+id/city_list_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:drawableLeft="@drawable/menu"
+                    android:contentDescription="Menu"
+                    android:layout_gravity="end" /> <!-- Przycisk po prawej stronie -->
+            </LinearLayout>
+        </androidx.appcompat.widget.Toolbar>
 
     <ScrollView
         android:layout_width="match_parent"
@@ -16,29 +69,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:padding="16dp">
-
-            <!-- Przycisk listy miast -->
-            <Button
-                android:id="@+id/city_list_button"
-                android:layout_width="75dp"
-                android:layout_height="48dp"
-                android:background="@android:color/transparent"
-                android:drawableLeft="@drawable/menu"
-                android:contentDescription="Menu"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <!-- Przycisk lokalizacji -->
-            <Button
-                android:id="@+id/location_button_on"
-                android:layout_width="56dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="55dp"
-                android:background="@android:color/transparent"
-                android:drawableLeft="@drawable/location_on"
-                android:contentDescription="Włącz lokalizację"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
 
             <ImageView
                 android:id="@+id/weather_icon"
@@ -235,4 +265,5 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
+    </LinearLayout>
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
