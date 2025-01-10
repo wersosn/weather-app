@@ -1,19 +1,13 @@
 package com.example.projektsm.ui;
 
-import android.Manifest;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -25,14 +19,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationCompat;
 import androidx.room.Room;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -45,7 +36,6 @@ import com.example.projektsm.db.City;
 import com.example.projektsm.db.DataBase;
 import com.example.projektsm.sensors.LocationActivity;
 import com.example.projektsm.db.CityActivity;
-import com.google.android.material.button.MaterialButton;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -72,6 +62,9 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
     private List<City> cityList = new ArrayList<>();
     private DataBase db;
     private String cityName;
+    private Notifications notif;
+    private UI UI;
+    private Popups popups;
 
     /* Zachowanie stanu */
     @Override
@@ -92,13 +85,16 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        // Sprawdzanie czy jest dostęp do Internetu
-        if (!isInternetConnected()) {
-            showEnableSettingsDialog(getString(R.string.enable_internet), getString(R.string.enable_internet_message), new Intent(Settings.ACTION_WIFI_SETTINGS));
-        }
+        popups = new Popups(this);
+        notif = new Notifications(this, notificationPermissionLauncher);
+        UI = new UI(this);
 
         setViews();
+
+        // Sprawdzanie czy jest dostęp do Internetu
+        if (!popups.isInternetConnected()) {
+            showEnableSettingsDialog(getString(R.string.enable_internet), getString(R.string.enable_internet_message), new Intent(Settings.ACTION_WIFI_SETTINGS));
+        }
 
         // Sprawdzenie, czy są dostępne jakieś miasto
         if (savedInstanceState != null) {
@@ -111,10 +107,10 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         }
 
         // Ustawianie początkowej pogody
-        if (cityName == null && !isLocationEnabled() && cityList.isEmpty()) {
+        if (cityName == null && !popups.isLocationEnabled() && cityList.isEmpty()) {
             getCurrentWeather("Warsaw", mainLayout);
             getFiveDayForecast("Warsaw");
-        } else if (cityName == null && !isLocationEnabled()) {
+        } else if (cityName == null && !popups.isLocationEnabled()) {
             getCurrentWeather(cityList.get(0).getName(), mainLayout);
             getFiveDayForecast(cityList.get(0).getName());
         }
@@ -122,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
             getCurrentWeather(cityName, mainLayout);
             getFiveDayForecast(cityName);
         }
-        else if(isLocationEnabled()) {
+        else if(popups.isLocationEnabled()) {
             location = new LocationActivity(this, this);
             location.requestLocationPermissionAndFetch(this);
             Log.d(TAG, "Lokalizacja: " + location);
@@ -135,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         locationButtonOn = findViewById(R.id.location_button_on);
         listButton = findViewById(R.id.city_list_button);
 
-        if (isLocationEnabled()) {
+        if (popups.isLocationEnabled()) {
             locationButtonOn.setVisibility(View.GONE);
         }
 
@@ -176,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
     }
 
     private void requestUserLocation() {
-        if(!isLocationEnabled()) {
+        if(!popups.isLocationEnabled()) {
             locationButtonOn.setVisibility(View.VISIBLE);
             showEnableSettingsDialog(getString(R.string.enable_location), getString(R.string.enable_location_message), new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
         }
@@ -189,9 +185,9 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
 
     public void refreshWeatherData() {
         if (cityList.isEmpty()) {
-            if (isLocationEnabled() && location != null) {
+            if (popups.isLocationEnabled() && location != null) {
                 location.fetchLocation();
-            } else if (cityName == null && !isLocationEnabled()) {
+            } else if (cityName == null && !popups.isLocationEnabled()) {
                 getCurrentWeather("Warsaw", mainLayout);
                 getFiveDayForecast("Warsaw");
             }
@@ -254,9 +250,9 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
                     // Pobieranie wschodu i zachodu słońca:
                     long sunrise = weather.getSys().getSunrise();
                     long sunset = weather.getSys().getSunset();
-                    boolean night = isNight(sunrise, sunset);
+                    boolean night = UI.isNight(sunrise, sunset);
                     String weatherCondition = weather.getWeather().get(0).getMain();
-                    int backgroundResource = updateBackground(weatherCondition, night);
+                    int backgroundResource = UI.updateBackground(weatherCondition, night);
                     mainLayout.setBackgroundResource(backgroundResource);
 
                     // Wyświetlanie wartości:
@@ -266,10 +262,10 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
                     humidityTextView.setText(getString(R.string.humidity, humidity));
                     windTextView.setText(getString(R.string.wind, windSpeed));
                     visibilityTextView.setText(getString(R.string.visibility, visibility));
-                    weatherIcon.setImageResource(getWeatherIcon(iconCode));
+                    weatherIcon.setImageResource(UI.getWeatherIcon(iconCode));
 
                     // Zmiana koloru tekstu w zależności od pogody:
-                    int textColor = getTextColor(weatherCondition, night);
+                    int textColor = UI.getTextColor(weatherCondition, night);
                     temperatureTextView.setTextColor(textColor);
                     temperatureFeelsLikeTextView.setTextColor(textColor);
                     pressureTextView.setTextColor(textColor);
@@ -277,7 +273,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
                     windTextView.setTextColor(textColor);
                     visibilityTextView.setTextColor(textColor);
 
-                    showWeatherNotification(city, String.valueOf(temperature), String.valueOf(feelsLikeTemperature), iconCode);
+                    notif.showWeatherNotification(city, String.valueOf(temperature), String.valueOf(feelsLikeTemperature), iconCode);
                 } else {
                     Log.e(TAG, "Error: " + response.errorBody());
                     temperatureTextView.setText(R.string.no_weather);
@@ -360,7 +356,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
                     LinearLayout.LayoutParams.WRAP_CONTENT
             ));
             dateText.setGravity(Gravity.CENTER);
-            dateText.setText(getDayOfWeek(date));
+            dateText.setText(UI.getDayOfWeek(date));
             dateText.setTextSize(18);
             dateText.setTypeface(null, Typeface.BOLD);
             dateText.setTextColor(Color.WHITE);
@@ -369,7 +365,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
             ImageView weatherIcon = new ImageView(this);
             int iconSize = 80;
             weatherIcon.setLayoutParams(new LinearLayout.LayoutParams(iconSize, iconSize));
-            int iconResId = getWeatherIconWeek(iconCode);
+            int iconResId = UI.getWeatherIconWeek(iconCode);
             weatherIcon.setImageResource(iconResId);
 
             // Temperatura
@@ -391,18 +387,6 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
     }
 
     /* Popupy */
-    private boolean isLocationEnabled() {
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        return locationManager != null && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-    }
-
-    private boolean isInternetConnected() {
-        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        Network network = connectivityManager.getActiveNetwork();
-        NetworkCapabilities capabilities = connectivityManager.getNetworkCapabilities(network);
-        return capabilities != null && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
-    }
-
     private void showEnableSettingsDialog(String title, String message, Intent settingsIntent) {
         new AlertDialog.Builder(this)
                 .setTitle(title)
@@ -416,165 +400,12 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
     }
 
     /* Powiadomienia */
-    private final ActivityResultLauncher<String> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
-        @Override
-        public void onActivityResult(Boolean o) {
-            if (o) {
-                Toast.makeText(MainActivity.this, R.string.notif_enabled, Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(MainActivity.this, R.string.notif_disabled, Toast.LENGTH_SHORT).show();
-            }
-        }
-    });
-    
-    private void showWeatherNotification(String cityName, String temperature, String feelsLikeTemp, String iconCode) {
-        NotificationManager notificationManager = getSystemService(NotificationManager.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            activityResultLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
-        }
-        else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                CharSequence name = getString(R.string.app_name);
-                String description = "Notifications";
-                int importance = NotificationManager.IMPORTANCE_DEFAULT;
-                NotificationChannel channel = new NotificationChannel("weather_channel", name, importance);
-                channel.setDescription(description);
-                notificationManager.createNotificationChannel(channel);
-            }
-        }
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "weather_channel")
-                .setSmallIcon(getWeatherIcon(iconCode))
-                .setContentTitle(getString(R.string.notif_title, cityName))
-                .setContentText(getString(R.string.notif_desc, temperature, feelsLikeTemp))
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-
-        notificationManager.notify(1001, builder.build());
-    }
-
-    /* Dynamiczne UI */
-    private String getDayOfWeek(String date) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        SimpleDateFormat dayFormat = new SimpleDateFormat("EEE", Locale.getDefault());
-        try {
-            Date parsedDate = sdf.parse(date);
-            return dayFormat.format(parsedDate);
-        } catch (ParseException e) {
-            Log.e(TAG, "Parse error" + e.getMessage());
-            return "";
-        }
-    }
-
-    private int getWeatherIcon(String iconCode) {
-        switch (iconCode) {
-            case "01d":
-                return R.drawable.icon_01d;
-            case "01n":
-                return R.drawable.icon_01n;
-            case "02d":
-                return R.drawable.icon_02d;
-            case "02n":
-                return R.drawable.icon_02n;
-            case "03d":
-            case "03n":
-            case "04d":
-            case "04n":
-                return R.drawable.icon_03d;
-            case "09d":
-            case "09n":
-                return R.drawable.icon_09d;
-            case "10d":
-                return R.drawable.icon_10d;
-            case "10n":
-                return R.drawable.icon_10n;
-            case "11d":
-            case "11n":
-                return R.drawable.icon_11d;
-            case "13d":
-            case "13n":
-                return R.drawable.icon_13d;
-            case "50d":
-            case "50n":
-                return R.drawable.icon_50d;
-
-            default: return R.drawable.icon_01d;
-        }
-    }
-
-    private int getWeatherIconWeek(String iconCode) {
-        switch (iconCode) {
-            case "01d":
-            case "01n":
-                return R.drawable.icon_01d;
-            case "02d":
-            case "02n":
-                return R.drawable.icon_02d;
-            case "03d":
-            case "03n":
-            case "04d":
-            case "04n":
-                return R.drawable.icon_03d;
-            case "09d":
-            case "09n":
-                return R.drawable.icon_09d;
-            case "10d":
-            case "10n":
-                return R.drawable.icon_10d;
-            case "11d":
-            case "11n":
-                return R.drawable.icon_11d;
-            case "13d":
-            case "13n":
-                return R.drawable.icon_13d;
-            case "50d":
-            case "50n":
-                return R.drawable.icon_50d;
-
-            default: return R.drawable.icon_01d;
-        }
-    }
-
-    private int updateBackground(String weatherCondition, boolean isNight) {
-        if (isNight) {
-            return R.drawable.night_gradient;
-        } else {
-            switch (weatherCondition.toLowerCase()) {
-                case "clear":
-                    return R.drawable.sunny_gradient;
-                case "clouds":
-                case "rain":
-                case "drizzle":
-                    return R.drawable.rainy_gradient;
-                case "thunderstorm":
-                    return R.drawable.storm_gradient;
-                case "snow":
-                    return R.drawable.snow_gradient;
-                default:
-                    return R.drawable.rainy_gradient;
-            }
-        }
-    }
-
-    private int getTextColor(String weatherCondition, boolean isNight) {
-        if (isNight) {
-            return getResources().getColor(android.R.color.white);
-        } else {
-            switch (weatherCondition.toLowerCase()) {
-                case "thunderstorm":
-                    return getResources().getColor(android.R.color.primary_text_light);
-                case "snow":
-                case "clear":
-                case "clouds":
-                case "rain":
-                case "drizzle":
-                default:
-                    return getResources().getColor(android.R.color.black);
-            }
-        }
-    }
-
-    private boolean isNight(long sunrise, long sunset) {
-        long currentTime = System.currentTimeMillis() / 1000;
-        return currentTime < sunrise || currentTime > sunset;
-    }
+    private final ActivityResultLauncher<String> notificationPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    Toast.makeText(this, R.string.notif_enabled, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, R.string.notif_disabled, Toast.LENGTH_SHORT).show();
+                }
+            });
 }
