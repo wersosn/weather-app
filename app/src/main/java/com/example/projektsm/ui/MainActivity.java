@@ -68,11 +68,12 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
     private ConstraintLayout mainLayout;
     private LocationActivity location;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private Button postNotification, locationButtonOn, listButton;
+    private Button locationButtonOn, listButton;
     private List<City> cityList = new ArrayList<>();
     private DataBase db;
     private String cityName;
 
+    /* Zachowanie stanu */
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -97,7 +98,39 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
             showEnableSettingsDialog(getString(R.string.enable_internet), getString(R.string.enable_internet_message), new Intent(Settings.ACTION_WIFI_SETTINGS));
         }
 
-        // Ustawienie widoków
+        setViews();
+
+        // Sprawdzenie, czy są dostępne jakieś miasto
+        if (savedInstanceState != null) {
+            cityName = savedInstanceState.getString("savedCityName", null);
+            Log.d(TAG, "Ostatnie miasto: " + cityName);
+        }
+        else {
+            loadCities();
+            cityName = getIntent().getStringExtra("city_name");
+        }
+
+        // Ustawianie początkowej pogody
+        if (cityName == null && !isLocationEnabled() && cityList.isEmpty()) {
+            getCurrentWeather("Warsaw", mainLayout);
+            getFiveDayForecast("Warsaw");
+        } else if (cityName == null && !isLocationEnabled()) {
+            getCurrentWeather(cityList.get(0).getName(), mainLayout);
+            getFiveDayForecast(cityList.get(0).getName());
+        }
+        else if(cityName != null) {
+            getCurrentWeather(cityName, mainLayout);
+            getFiveDayForecast(cityName);
+        }
+        else if(isLocationEnabled()) {
+            location = new LocationActivity(this, this);
+            location.requestLocationPermissionAndFetch(this);
+            Log.d(TAG, "Lokalizacja: " + location);
+        }
+    }
+
+    /* Inicjalizacja widoków */
+    private void setViews() {
         mainLayout = findViewById(R.id.main_layout);
         locationButtonOn = findViewById(R.id.location_button_on);
         listButton = findViewById(R.id.city_list_button);
@@ -127,77 +160,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         swipeRefreshLayout.setOnRefreshListener(() -> {
             refreshWeatherData();
         });
-
-        if (savedInstanceState != null) {
-            cityName = savedInstanceState.getString("savedCityName", null);
-            Log.d(TAG, "Ostatnie miasto: " + cityName);
-        }
-        else {
-            loadCities();
-            cityName = getIntent().getStringExtra("city_name");
-        }
-
-        Log.d(TAG, "Miasto: " + cityName);
-        // Sprawdzenie, czy są dostępne jakieś miasta w bazie
-        if (cityName == null && !isLocationEnabled() && cityList.isEmpty()) {
-            getCurrentWeather("Warsaw", mainLayout);
-            getFiveDayForecast("Warsaw");
-        } else if (cityName == null && !isLocationEnabled()) {
-            getCurrentWeather(cityList.get(0).getName(), mainLayout);
-            getFiveDayForecast(cityList.get(0).getName());
-        }
-        else if(cityName != null) {
-            getCurrentWeather(cityName, mainLayout);
-            getFiveDayForecast(cityName);
-        }
-        else if(isLocationEnabled()) {
-            location = new LocationActivity(this, this);
-            location.requestLocationPermissionAndFetch(this);
-            Log.d(TAG, "Lokalizacja: " + location);
-        }
     }
-
-    private final ActivityResultLauncher<String> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
-        @Override
-        public void onActivityResult(Boolean o) {
-            if (o) {
-                Toast.makeText(MainActivity.this, R.string.notif_enabled, Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(MainActivity.this, R.string.notif_disabled, Toast.LENGTH_SHORT).show();
-            }
-        }
-    });
-
-
-    private void showWeatherNotification(String cityName, String temperature, String feelsLikeTemp, String iconCode) {
-        NotificationManager notificationManager = getSystemService(NotificationManager.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            activityResultLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
-        }
-        else {
-            // Tworzenie kanału powiadomień (dla Androida 8.0 i nowszych)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                CharSequence name = getString(R.string.app_name);
-                String description = "Notifications";
-                int importance = NotificationManager.IMPORTANCE_DEFAULT;
-                NotificationChannel channel = new NotificationChannel("weather_channel", name, importance);
-                channel.setDescription(description);
-                notificationManager.createNotificationChannel(channel);
-            }
-        }
-
-
-        // Tworzenie powiadomienia
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "weather_channel")
-                .setSmallIcon(getWeatherIcon(iconCode))
-                .setContentTitle(getString(R.string.notif_title, cityName))
-                .setContentText(getString(R.string.notif_desc, temperature, feelsLikeTemp))
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-
-        // Wyświetlenie powiadomienia
-        notificationManager.notify(1001, builder.build());
-    }
-
 
     @Override
     protected void onResume() {
@@ -218,7 +181,6 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
             showEnableSettingsDialog(getString(R.string.enable_location), getString(R.string.enable_location_message), new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
         }
         else {
-            // Inicjalizacja obsługi lokalizacji
             locationButtonOn.setVisibility(View.GONE);
             location = new LocationActivity(this, this);
             location.requestLocationPermissionAndFetch(this);
@@ -246,6 +208,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         swipeRefreshLayout.setRefreshing(false);
     }
 
+    /* Obsługa lokalizacji */
     @Override
     public void onLocationRetrieved(double latitude, double longitude, String cityName) {
         if (cityName != null && !cityName.isEmpty()) {
@@ -267,6 +230,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         temperatureTextView.setText(R.string.no_location);
     }
 
+    /* Pobieranie pogody */
     private void getCurrentWeather(String city, ConstraintLayout mainLayout) {
         cityName = city;
         WeatherApiService weatherApi = RetrofitClient.getClient().create(WeatherApiService.class);
@@ -328,7 +292,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         });
     }
 
-    // Pogoda na kolejne 5 dni:
+    // Pobieranie pogody na kolejne 5 dni:
     private void getFiveDayForecast(String city) {
         WeatherApiService weatherApi = RetrofitClient.getClient().create(WeatherApiService.class);
         Call<ForecastResponse> call = weatherApi.getFiveDayForecast(city, API_KEY, "metric");
@@ -426,7 +390,69 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         }
     }
 
+    /* Popupy */
+    private boolean isLocationEnabled() {
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        return locationManager != null && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+    }
 
+    private boolean isInternetConnected() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        Network network = connectivityManager.getActiveNetwork();
+        NetworkCapabilities capabilities = connectivityManager.getNetworkCapabilities(network);
+        return capabilities != null && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+    }
+
+    private void showEnableSettingsDialog(String title, String message, Intent settingsIntent) {
+        new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(R.string.turn_on, (dialog, which) -> {startActivityForResult(settingsIntent, 0);})
+                .setNegativeButton(R.string.cancel, (dialog, which) -> {
+                    dialog.dismiss();
+                })
+                .create()
+                .show();
+    }
+
+    /* Powiadomienia */
+    private final ActivityResultLauncher<String> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
+        @Override
+        public void onActivityResult(Boolean o) {
+            if (o) {
+                Toast.makeText(MainActivity.this, R.string.notif_enabled, Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(MainActivity.this, R.string.notif_disabled, Toast.LENGTH_SHORT).show();
+            }
+        }
+    });
+    
+    private void showWeatherNotification(String cityName, String temperature, String feelsLikeTemp, String iconCode) {
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            activityResultLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+        }
+        else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                CharSequence name = getString(R.string.app_name);
+                String description = "Notifications";
+                int importance = NotificationManager.IMPORTANCE_DEFAULT;
+                NotificationChannel channel = new NotificationChannel("weather_channel", name, importance);
+                channel.setDescription(description);
+                notificationManager.createNotificationChannel(channel);
+            }
+        }
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "weather_channel")
+                .setSmallIcon(getWeatherIcon(iconCode))
+                .setContentTitle(getString(R.string.notif_title, cityName))
+                .setContentText(getString(R.string.notif_desc, temperature, feelsLikeTemp))
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+        notificationManager.notify(1001, builder.build());
+    }
+
+    /* Dynamiczne UI */
     private String getDayOfWeek(String date) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         SimpleDateFormat dayFormat = new SimpleDateFormat("EEE", Locale.getDefault());
@@ -550,30 +576,5 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
     private boolean isNight(long sunrise, long sunset) {
         long currentTime = System.currentTimeMillis() / 1000;
         return currentTime < sunrise || currentTime > sunset;
-    }
-
-    // Popupy:
-    private boolean isLocationEnabled() {
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        return locationManager != null && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-    }
-
-    private boolean isInternetConnected() {
-        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        Network network = connectivityManager.getActiveNetwork();
-        NetworkCapabilities capabilities = connectivityManager.getNetworkCapabilities(network);
-        return capabilities != null && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
-    }
-
-    private void showEnableSettingsDialog(String title, String message, Intent settingsIntent) {
-        new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton(R.string.turn_on, (dialog, which) -> {startActivityForResult(settingsIntent, 0);})
-                .setNegativeButton(R.string.cancel, (dialog, which) -> {
-                    dialog.dismiss();
-                })
-                .create()
-                .show();
     }
 }
