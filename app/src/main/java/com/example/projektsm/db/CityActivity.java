@@ -17,7 +17,6 @@ import java.util.List;
 public class CityActivity extends AppCompatActivity {
     private DataBase db;
     private CityAdapter cityAdapter;
-    private MainActivity refresh;
     private List<City> cityList = new ArrayList<>();
 
 

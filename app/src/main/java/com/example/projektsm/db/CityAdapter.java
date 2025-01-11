@@ -5,17 +5,24 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.room.Room;
 
 import com.example.projektsm.R;
 
 import java.util.List;
 public class CityAdapter extends ArrayAdapter<City> {
+    private final Context context;
+    private final List<City> cities;
+
     public CityAdapter(@NonNull Context context, @NonNull List<City> objects) {
         super(context, 0, objects);
+        this.context = context;
+        this.cities = objects;
     }
 
     @NonNull
@@ -28,6 +35,16 @@ public class CityAdapter extends ArrayAdapter<City> {
         City city = getItem(position);
         TextView cityName = convertView.findViewById(R.id.city_name_text);
         cityName.setText(city.getName());
+
+        ImageView deleteButton = convertView.findViewById(R.id.delete_button);
+        deleteButton.setOnClickListener(v -> {
+            DataBase db = Room.databaseBuilder(context.getApplicationContext(),
+                    DataBase.class, "user_database").allowMainThreadQueries().build();
+            db.icity().delete(city);
+            cities.remove(position);
+            notifyDataSetChanged();
+        });
+
 
         return convertView;
     }
