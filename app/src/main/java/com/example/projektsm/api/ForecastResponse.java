@@ -11,6 +11,7 @@ public class ForecastResponse {
     @SerializedName("city")
     private City city;
 
+
     public List<Forecast> getList() {
         return list;
     }
@@ -18,6 +19,7 @@ public class ForecastResponse {
     public City getCity() {
         return city;
     }
+
 
     public static class Forecast {
         @SerializedName("dt")
@@ -78,6 +80,9 @@ public class ForecastResponse {
             @SerializedName("icon")
             private String icon;
 
+            @SerializedName("main")
+            private String main;
+
             public String getDescription() {
                 return description;
             }
@@ -85,6 +90,8 @@ public class ForecastResponse {
             public String getIcon() {
                 return icon;
             }
+
+            public String getMain() { return main; }
         }
 
         public static class Wind {

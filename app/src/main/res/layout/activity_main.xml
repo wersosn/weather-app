@@ -40,7 +40,7 @@
                 <!-- Przycisk lokalizacji -->
                 <Button
                     android:id="@+id/location_button_on"
-                    android:layout_width="47dp"
+                    android:layout_width="48dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="end"
                     android:background="@android:color/transparent"
@@ -59,211 +59,214 @@
             </LinearLayout>
         </androidx.appcompat.widget.Toolbar>
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true">
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/main_layout"
+        <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="16dp">
+            android:fillViewport="true">
 
-            <ImageView
-                android:id="@+id/weather_icon"
-                android:layout_width="320dp"
-                android:layout_height="210dp"
-                android:layout_marginTop="16dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <TextView
-                android:id="@+id/weatherTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/temp_loading"
-                android:textSize="18sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/weather_icon" />
-
-            <TextView
-                android:id="@+id/weather_temp_feels_like"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/temp_loading"
-                android:textSize="18sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/weatherTextView" />
-
-            <HorizontalScrollView
-                android:id="@+id/daily_forecast_scroll_view"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/main_layout"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:overScrollMode="never"
-                android:scrollbars="none"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/weather_temp_feels_like">
+                android:layout_height="match_parent"
+                android:padding="16dp">
 
-                <LinearLayout
-                    android:id="@+id/daily_forecast_layout"
+                <ImageView
+                    android:id="@+id/weather_icon"
+                    android:layout_width="320dp"
+                    android:layout_height="210dp"
+                    android:layout_marginTop="16dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/weatherTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center"
-                    android:layout_marginLeft="30dp">
+                    android:layout_marginTop="8dp"
+                    android:text="@string/temp_loading"
+                    android:textSize="18sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/weather_icon" />
 
-                    <!-- Przykładowy układ dla jednego dnia -->
+                <TextView
+                    android:id="@+id/weather_temp_feels_like"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/temp_loading"
+                    android:textSize="18sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/weatherTextView" />
+
+                <!-- Sekcja: Pogodna na kolejne 5 dni -->
+                <HorizontalScrollView
+                    android:id="@+id/daily_forecast_scroll_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:overScrollMode="never"
+                    android:scrollbars="none"
+                    android:background="@drawable/blur_gradient"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/weather_temp_feels_like">
+
                     <LinearLayout
+                        android:id="@+id/daily_forecast_layout"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="20dp"
-                        android:orientation="vertical">
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        android:layout_marginLeft="30dp">
 
-                        <TextView
+                        <!-- Przykładowy układ dla jednego dnia -->
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:layout_marginLeft="30dp"
-                            android:text="Mon"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
+                            android:layout_marginHorizontal="20dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:layout_marginLeft="30dp"
+                                android:text="Mon"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <ImageView
+                                android:layout_width="60dp"
+                                android:layout_height="60dp"
+                                android:layout_marginLeft="18dp"
+                                android:src="@drawable/icon_01d" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:text="0°C"
+                                android:textSize="14sp"
+                                android:layout_marginLeft="32dp"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </HorizontalScrollView>
+
+                <!-- Sekcja: Dodatkowe dane -->
+                <androidx.gridlayout.widget.GridLayout
+                    android:id="@+id/weather_details_grid"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/blur_gradient"
+                    app:columnCount="2"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/daily_forecast_scroll_view"
+                    app:rowCount="2">
+
+                    <!-- Kwadrat 1: Ciśnienie -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="8dp"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        app:layout_columnWeight="1"
+                        app:layout_rowWeight="1">
 
                         <ImageView
-                            android:layout_width="60dp"
-                            android:layout_height="60dp"
-                            android:layout_marginLeft="18dp"
-                            android:src="@drawable/icon_01d" />
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/pressure" />
 
                         <TextView
+                            android:id="@+id/pressure"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:gravity="center"
-                            android:text="0°C"
-                            android:textSize="14sp"
-                            android:layout_marginLeft="32dp"/>
+                            android:text="@string/pressure_loading"
+                            android:textSize="14sp" />
                     </LinearLayout>
 
-                </LinearLayout>
-            </HorizontalScrollView>
-
-            <!-- Sekcja: Kwadraty na dodatkowe dane -->
-            <androidx.gridlayout.widget.GridLayout
-                android:id="@+id/weather_details_grid"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:columnCount="2"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/daily_forecast_scroll_view"
-                app:rowCount="2">
-
-                <!-- Kwadrat 1: Ciśnienie -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="8dp"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    app:layout_columnWeight="1"
-                    app:layout_rowWeight="1">
-
-                    <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/pressure" />
-
-                    <TextView
-                        android:id="@+id/pressure"
-                        android:layout_width="wrap_content"
+                    <!-- Kwadrat 2: Wilgotność -->
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_margin="8dp"
                         android:gravity="center"
-                        android:text="@string/pressure_loading"
-                        android:textSize="14sp" />
-                </LinearLayout>
+                        android:orientation="vertical"
+                        app:layout_columnWeight="1"
+                        app:layout_rowWeight="1">
 
-                <!-- Kwadrat 2: Wilgotność -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="8dp"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    app:layout_columnWeight="1"
-                    app:layout_rowWeight="1">
+                        <ImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/humidity" />
 
-                    <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/humidity" />
+                        <TextView
+                            android:id="@+id/humidity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="@string/humidity_loading"
+                            android:textSize="14sp" />
+                    </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/humidity"
-                        android:layout_width="wrap_content"
+                    <!-- Kwadrat 3: Wiatr -->
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_margin="8dp"
                         android:gravity="center"
-                        android:text="@string/humidity_loading"
-                        android:textSize="14sp" />
-                </LinearLayout>
+                        android:orientation="vertical"
+                        app:layout_columnWeight="1"
+                        app:layout_rowWeight="1">
 
-                <!-- Kwadrat 3: Wiatr -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="8dp"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    app:layout_columnWeight="1"
-                    app:layout_rowWeight="1">
+                        <ImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/wind" />
 
-                    <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/wind" />
+                        <TextView
+                            android:id="@+id/wind"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="@string/wind_loading"
+                            android:textSize="14sp" />
+                    </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/wind"
-                        android:layout_width="wrap_content"
+                    <!-- Kwadrat 4: Widoczność -->
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_margin="8dp"
                         android:gravity="center"
-                        android:text="@string/wind_loading"
-                        android:textSize="14sp" />
-                </LinearLayout>
+                        android:orientation="vertical"
+                        app:layout_columnWeight="1"
+                        app:layout_rowWeight="1">
 
-                <!-- Kwadrat 4: Widoczność -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="8dp"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    app:layout_columnWeight="1"
-                    app:layout_rowWeight="1">
+                        <ImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/visibility" />
 
-                    <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/visibility" />
+                        <TextView
+                            android:id="@+id/visibility"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="@string/visibility_loading"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+                </androidx.gridlayout.widget.GridLayout>
 
-                    <TextView
-                        android:id="@+id/visibility"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:text="@string/visibility_loading"
-                        android:textSize="14sp" />
-                </LinearLayout>
-            </androidx.gridlayout.widget.GridLayout>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </ScrollView>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </ScrollView>
     </LinearLayout>
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

@@ -139,6 +139,23 @@ public class UI {
         }
     }
 
+    public int getTextColorForForecast(String weatherCondition) {
+        Resources resources = context.getResources();
+        switch (weatherCondition.toLowerCase()) {
+            case "thunderstorm":
+                return resources.getColor(android.R.color.primary_text_light);
+            case "snow":
+                return resources.getColor(android.R.color.black);
+            case "clear":
+            case "clouds":
+            case "rain":
+            case "drizzle":
+            default:
+                return resources.getColor(android.R.color.white);
+        }
+    }
+
+
     public boolean isNight(long sunrise, long sunset) {
         long currentTime = System.currentTimeMillis() / 1000;
         return currentTime < sunrise || currentTime > sunset;

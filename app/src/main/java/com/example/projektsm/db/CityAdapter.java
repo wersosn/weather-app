@@ -4,6 +4,8 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -45,6 +47,8 @@ public class CityAdapter extends ArrayAdapter<City> {
             notifyDataSetChanged();
         });
 
+        Animation fadeIn = AnimationUtils.loadAnimation(context, R.anim.fade_in);
+        convertView.startAnimation(fadeIn);
 
         return convertView;
     }

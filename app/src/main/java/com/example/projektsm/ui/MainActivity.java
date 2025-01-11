@@ -63,11 +63,10 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
     private Button locationButtonOn, listButton;
     private List<City> cityList = new ArrayList<>();
     private DataBase db;
-    private String cityName;
+    private String cityName, weatherCondition;
     private Notifications notif;
     private UI UI;
-    private Popups popups;
-    private Toolbar toolbar;
+    private boolean night;
 
     /* Zachowanie stanu */
     @Override
@@ -252,8 +251,8 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
                     // Pobieranie wschodu i zachodu słońca:
                     long sunrise = weather.getSys().getSunrise();
                     long sunset = weather.getSys().getSunset();
-                    boolean night = UI.isNight(sunrise, sunset);
-                    String weatherCondition = weather.getWeather().get(0).getMain();
+                    night = UI.isNight(sunrise, sunset);
+                    weatherCondition = weather.getWeather().get(0).getMain();
                     int backgroundResource = UI.updateBackground(weatherCondition, night);
                     mainLayout.setBackgroundResource(backgroundResource);
 
@@ -301,6 +300,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
                 if (response.isSuccessful() && response.body() != null) {
                     ForecastResponse forecastResponse = response.body();
                     displayDailyForecast(forecastResponse.getList());
+
                 } else {
                     Log.e(TAG, "Error: " + response.errorBody());
                 }
@@ -336,7 +336,9 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
             String iconCode = null;
             for (ForecastResponse.Forecast dailyForecast : dailyForecasts) {
                 avgTemp += dailyForecast.getMain().getTemp();
-                if (iconCode == null) iconCode = dailyForecast.getWeather().get(0).getIcon();
+                if (iconCode == null) {
+                    iconCode = dailyForecast.getWeather().get(0).getIcon();
+                }
             }
             avgTemp /= dailyForecasts.size();
 
@@ -361,7 +363,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
             dateText.setText(UI.getDayOfWeek(date));
             dateText.setTextSize(18);
             dateText.setTypeface(null, Typeface.BOLD);
-            dateText.setTextColor(Color.WHITE);
+            dateText.setTextColor(UI.getTextColor(weatherCondition, night));
 
             // Ikona pogody
             ImageView weatherIcon = new ImageView(this);
@@ -379,7 +381,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
             tempText.setGravity(Gravity.CENTER);
             tempText.setText(Math.round(avgTemp) + "°C");
             tempText.setTextSize(16);
-            tempText.setTextColor(Color.WHITE);
+            tempText.setTextColor(UI.getTextColor(weatherCondition, night));
 
             dayLayout.addView(dateText);
             dayLayout.addView(weatherIcon);
