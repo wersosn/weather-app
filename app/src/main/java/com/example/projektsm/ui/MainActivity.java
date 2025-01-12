@@ -60,13 +60,15 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
     private ConstraintLayout mainLayout;
     private LocationActivity location;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private Button locationButtonOn, listButton;
+    private Button locationButtonOn, listButton, openWeatherMapButton;
     private List<City> cityList = new ArrayList<>();
     private DataBase db;
     private String cityName, weatherCondition;
     private Notifications notif;
     private UI UI;
     private boolean night;
+
+    private int id;
 
     /* Zachowanie stanu */
     @Override
@@ -163,6 +165,20 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         swipeRefreshLayout.setOnRefreshListener(() -> {
             refreshWeatherData();
         });
+
+        openWeatherMapButton = findViewById(R.id.open_weather_map_button);
+        openWeatherMapButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (id >= 0) {
+                    String url = "https://openweathermap.org/city/" + id;
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(MainActivity.this, R.string.no_id, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     private void loadCities() {
@@ -240,6 +256,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
                     WeatherResponse weather = response.body();
 
                     // Pobranie wartości:
+                    id = weather.getId();
                     int temperature =  Math.round(weather.getMain().getTemperature());
                     int feelsLikeTemperature = Math.round(weather.getMain().getFeelsLike());
                     int humidity = weather.getMain().getHumidity();

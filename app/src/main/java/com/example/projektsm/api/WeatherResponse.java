@@ -21,6 +21,9 @@ public class WeatherResponse {
     @SerializedName("sys")
     private Sys sys;
 
+    @SerializedName("id")
+    private int id;
+
     // Gettery:
     public String getCityName() {
         return cityName;
@@ -46,7 +49,7 @@ public class WeatherResponse {
         return sys;
     }
 
-
+    public int getId() { return  id; }
     public static class Main {
         @SerializedName("temp")
         private float temperature;

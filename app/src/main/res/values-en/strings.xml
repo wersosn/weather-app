@@ -56,4 +56,5 @@
     <string name="no_location">Failed to get location</string>
     <string name="no_weather">Failed to load weather</string>
     <string name="no_location_permission">No location permission</string>
+    <string name="no_id">City not found</string>
 </resources>
