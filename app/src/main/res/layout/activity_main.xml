@@ -13,31 +13,29 @@
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?attr/colorPrimary"
+            android:layout_height="48dp"
+            android:background="@drawable/blue_gradient"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             android:elevation="4dp">
 
-            <!-- LinearLayout do rozmieszczenia elementów w toolbarze -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="start|end"> <!-- Elementy będą rozmieszczone po lewej i prawej stronie -->
+                android:gravity="start|end">
 
-                <!-- Tytuł Toolbara po lewej stronie -->
                 <TextView
                     android:id="@+id/toolbar_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/app_name"
-                    android:textColor="@android:color/white"
+                    android:textColor="@android:color/black"
                     android:textSize="20sp"
                     android:layout_gravity="start"
                     android:layout_weight="1"
-                    android:paddingTop="15dp"/> <!-- Sprawia, że tekst jest wyświetlany po lewej stronie -->
+                    android:paddingTop="10dp"
+                    android:textStyle="bold"/>
 
-                <!-- Przycisk lokalizacji -->
                 <Button
                     android:id="@+id/location_button_on"
                     android:layout_width="48dp"
@@ -45,9 +43,8 @@
                     android:layout_gravity="end"
                     android:background="@android:color/transparent"
                     android:contentDescription="Włącz lokalizację"
-                    android:drawableLeft="@drawable/location_on" /> <!-- Przycisk po prawej stronie -->
+                    android:drawableLeft="@drawable/location_on" />
 
-                <!-- Przycisk listy miast -->
                 <Button
                     android:id="@+id/city_list_button"
                     android:layout_width="wrap_content"
@@ -55,7 +52,7 @@
                     android:background="@android:color/transparent"
                     android:drawableLeft="@drawable/menu"
                     android:contentDescription="Menu"
-                    android:layout_gravity="end" /> <!-- Przycisk po prawej stronie -->
+                    android:layout_gravity="end" />
             </LinearLayout>
         </androidx.appcompat.widget.Toolbar>
 
@@ -122,7 +119,6 @@
                         android:gravity="center"
                         android:layout_marginLeft="30dp">
 
-                        <!-- Przykładowy układ dla jednego dnia -->
                         <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -169,7 +165,6 @@
                     app:layout_constraintTop_toBottomOf="@id/daily_forecast_scroll_view"
                     app:rowCount="2">
 
-                    <!-- Kwadrat 1: Ciśnienie -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -193,7 +188,6 @@
                             android:textSize="14sp" />
                     </LinearLayout>
 
-                    <!-- Kwadrat 2: Wilgotność -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -217,7 +211,6 @@
                             android:textSize="14sp" />
                     </LinearLayout>
 
-                    <!-- Kwadrat 3: Wiatr -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -241,7 +234,6 @@
                             android:textSize="14sp" />
                     </LinearLayout>
 
-                    <!-- Kwadrat 4: Widoczność -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"

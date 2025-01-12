@@ -31,7 +31,7 @@ public class AddCityActivity extends AppCompatActivity {
     private static final String API_KEY = "68d344c1d7699bddc73ed97ae19f8052";
     private final List<String> polishCities = Arrays.asList(
             "Warszawa", "Kraków", "Gdańsk", "Wrocław", "Poznań",
-            "Szczecin", "Katowice", "Lublin", "Bydgoszcz",
+            "Szczecin", "Katowice", "Bydgoszcz",
             "Olsztyn", "Białystok", "Gdynia", "Radom"
     );
 

@@ -25,5 +25,7 @@
         android:id="@+id/add_city_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/light_blue"
+        android:textColor="#000000"
         android:text="@string/add_city" />
 </LinearLayout>
