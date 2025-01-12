@@ -15,6 +15,7 @@
     <string name="humidity">Humidity: %1$d%%</string>
     <string name="wind">Wind: %1$.2f m/s</string>
     <string name="visibility">Visibility: %1$.2f km</string>
+    <string name="light">Light level: %.2f lux</string>
 
     <!--activity_city-->
     <string name="add_city">Add city</string>

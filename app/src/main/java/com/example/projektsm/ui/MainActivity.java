@@ -4,6 +4,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorListener;
+import android.hardware.SensorManager;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
@@ -52,10 +57,10 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MainActivity extends AppCompatActivity implements LocationActivity.LocationCallbackInterface {
+public class MainActivity extends AppCompatActivity implements LocationActivity.LocationCallbackInterface, SensorEventListener  {
     private static final String TAG = "MainActivity";
     private static final String API_KEY = "68d344c1d7699bddc73ed97ae19f8052";
-    private TextView temperatureTextView, temperatureFeelsLikeTextView, pressureTextView, humidityTextView, windTextView, visibilityTextView;
+    private TextView temperatureTextView, temperatureFeelsLikeTextView, pressureTextView, humidityTextView, windTextView, visibilityTextView, lightLevelTextView;
     private ImageView weatherIcon;
     private ConstraintLayout mainLayout;
     private LocationActivity location;
@@ -67,8 +72,9 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
     private Notifications notif;
     private UI UI;
     private boolean night;
-
     private int id;
+    private SensorManager sensorManager;
+    private Sensor lightSensor;
 
     /* Zachowanie stanu */
     @Override
@@ -89,6 +95,17 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
     protected void onResume() {
         super.onResume();
         refreshWeatherData();
+        if (sensorManager != null && lightSensor != null) {
+            sensorManager.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_UI);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (sensorManager != null) {
+            sensorManager.unregisterListener(this);
+        }
     }
 
     @Override
@@ -132,6 +149,12 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
             location.requestLocationPermissionAndFetch(this);
             Log.d(TAG, "Lokalizacja: " + location);
         }
+
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+        if (lightSensor != null) {
+            sensorManager.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_UI);
+        }
     }
 
     /* Inicjalizacja widoków */
@@ -151,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
         windTextView = findViewById(R.id.wind);
         visibilityTextView = findViewById(R.id.visibility);
         weatherIcon = findViewById(R.id.weather_icon);
-
+        lightLevelTextView = findViewById(R.id.light_level);
         locationButtonOn.setOnClickListener(v -> requestUserLocation());
         listButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -441,4 +464,15 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
                     Toast.makeText(this, R.string.notif_disabled, Toast.LENGTH_SHORT).show();
                 }
             });
+
+    /* Obsługa sensora światła */
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() == Sensor.TYPE_LIGHT) {
+            float lightLevel = event.values[0];
+            lightLevelTextView.setText(getString(R.string.light, lightLevel));
+        }
+    }
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) { }
 }

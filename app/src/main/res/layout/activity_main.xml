@@ -256,6 +256,30 @@
                             android:text="@string/visibility_loading"
                             android:textSize="14sp" />
                     </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="8dp"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        app:layout_columnSpan="2"
+                        app:layout_columnWeight="1"
+                        app:layout_rowWeight="1">
+
+                        <ImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/icon_01d" />
+
+                        <TextView
+                            android:id="@+id/light_level"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="Ładowanie poziomu światła..."
+                            android:textSize="14sp"/>
+                    </LinearLayout>
                 </androidx.gridlayout.widget.GridLayout>
 
                 <Button
@@ -264,9 +288,12 @@
                     android:layout_height="wrap_content"
                     android:text="Zobacz na OpenWeatherMap"
                     android:textColor="@android:color/black"
+                    app:layout_constraintTop_toBottomOf="@id/weather_details_grid"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent" />
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="16dp" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </ScrollView>
