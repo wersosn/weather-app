@@ -8,6 +8,7 @@
     <string name="humidity_loading">Loading humidity...</string>
     <string name="wind_loading">Loading wind...</string>
     <string name="visibility_loading">Loading visibility...</string>
+    <string name="light_loading">Loading light...</string>
 
     <string name="temperature_in">Temperature in %1$s: %2$d°C</string>
     <string name="feels_like_temperature">Feels like temperature: %1$d°C</string>
@@ -16,6 +17,7 @@
     <string name="wind">Wind: %1$.2f m/s</string>
     <string name="visibility">Visibility: %1$.2f km</string>
     <string name="light">Light level: %.2f lux</string>
+    <string name="check_website">Check OpenWeatherMap</string>
 
     <!--activity_city-->
     <string name="add_city">Add city</string>

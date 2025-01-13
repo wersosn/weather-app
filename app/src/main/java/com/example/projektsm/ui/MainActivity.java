@@ -150,6 +150,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
             Log.d(TAG, "Lokalizacja: " + location);
         }
 
+        // Ustawienie lightSensor
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
         if (lightSensor != null) {
@@ -297,7 +298,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
                     mainLayout.setBackgroundResource(backgroundResource);
 
                     // Wyświetlanie wartości:
-                    temperatureTextView.setText(getString(R.string.temperature_in, weather.getCityName(), temperature));
+                    temperatureTextView.setText(getString(R.string.temperature_in, cityName, temperature));
                     temperatureFeelsLikeTextView.setText(getString(R.string.feels_like_temperature, feelsLikeTemperature));
                     pressureTextView.setText(getString(R.string.pressure, pressure));
                     humidityTextView.setText(getString(R.string.humidity, humidity));
@@ -313,7 +314,7 @@ public class MainActivity extends AppCompatActivity implements LocationActivity.
                     humidityTextView.setTextColor(textColor);
                     windTextView.setTextColor(textColor);
                     visibilityTextView.setTextColor(textColor);
-
+                    lightLevelTextView.setTextColor(textColor);
                     notif.showWeatherNotification(city, String.valueOf(temperature), String.valueOf(feelsLikeTemperature), iconCode);
                 } else {
                     Log.e(TAG, "Error: " + response.errorBody());

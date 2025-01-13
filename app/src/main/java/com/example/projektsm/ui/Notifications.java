@@ -27,11 +27,9 @@ public class Notifications {
 
     public void showWeatherNotification(String cityName, String temperature, String feelsLikeTemp, String iconCode) {
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
-        // Sprawdzanie uprawnień do powiadomień w wersji Tiramisu i wyższej
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                 ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+                permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 CharSequence name = context.getString(R.string.app_name);

@@ -31,9 +31,10 @@ public class UI {
                 return R.drawable.icon_02n;
             case "03d":
             case "03n":
+                return R.drawable.icon_03d;
             case "04d":
             case "04n":
-                return R.drawable.icon_03d;
+                return R.drawable.icon_04d;
             case "09d":
             case "09n":
                 return R.drawable.icon_09d;
@@ -65,9 +66,10 @@ public class UI {
                 return R.drawable.icon_02d;
             case "03d":
             case "03n":
+                return R.drawable.icon_03d;
             case "04d":
             case "04n":
-                return R.drawable.icon_03d;
+                return R.drawable.icon_04d;
             case "09d":
             case "09n":
                 return R.drawable.icon_09d;

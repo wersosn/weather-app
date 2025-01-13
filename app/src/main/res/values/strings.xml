@@ -7,6 +7,7 @@
     <string name="humidity_loading">Ładowanie wilgotności...</string>
     <string name="wind_loading">Ładowanie wiatru...</string>
     <string name="visibility_loading">Ładowanie widoczności...</string>
+    <string name="light_loading">Ładowanie światła...</string>
 
     <string name="temperature_in">Temperatura w %1$s: %2$d°C</string>
     <string name="feels_like_temperature">Odczuwalna temperatura: %1$d°C</string>
@@ -15,6 +16,7 @@
     <string name="wind">Wiatr: %1$.2f m/s</string>
     <string name="visibility">Widoczność: %1$.2f km</string>
     <string name="light">Poziom światła: %.2f lux</string>
+    <string name="check_website">Sprawdź OpenWeatherMap</string>
 
     <!--activity_city-->
     <string name="add_city">Dodaj miasto</string>

@@ -116,14 +116,15 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:gravity="center"
+                        android:gravity="center_horizontal"
                         android:layout_marginLeft="30dp">
 
                         <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginHorizontal="20dp"
-                            android:orientation="vertical">
+                            android:orientation="vertical"
+                            android:gravity="center_horizontal">
 
                             <TextView
                                 android:layout_width="wrap_content"
@@ -223,7 +224,7 @@
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:src="@drawable/wind" />
+                            android:src="@drawable/dark_wind" />
 
                         <TextView
                             android:id="@+id/wind"
@@ -277,7 +278,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:gravity="center"
-                            android:text="Ładowanie poziomu światła..."
+                            android:text="@string/light_loading"
                             android:textSize="14sp"/>
                     </LinearLayout>
                 </androidx.gridlayout.widget.GridLayout>
@@ -286,8 +287,9 @@
                     android:id="@+id/open_weather_map_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Zobacz na OpenWeatherMap"
+                    android:text="@string/check_website"
                     android:textColor="@android:color/black"
+                    android:backgroundTint="@color/btn"
                     app:layout_constraintTop_toBottomOf="@id/weather_details_grid"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
