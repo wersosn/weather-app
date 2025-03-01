@@ -30,7 +30,7 @@ Jest to projekt aplikacji pogodowej, która pobiera dane pogodowe z zewnętrzneg
 ## Instrukcja użycia
 Aby uruchomić ten projekt musisz sklonować to repozytorium i uruchomić projekt w programie Android Studio:
 ```bash
-git clone https://github.com/wersosn/weather-app
+git clone https://github.com/wersosn/weather-app.git
 ```
 ---
 
@@ -65,5 +65,5 @@ This is a weather app project that retrieves weather data from an external API. 
 ## How to use
 To run this project, clone this repository and open it in Android Studio:
 ```bash
-git clone https://github.com/wersosn/weather-app
+git clone https://github.com/wersosn/weather-app.git
 ```
